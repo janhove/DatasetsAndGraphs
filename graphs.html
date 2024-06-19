@@ -88,6 +88,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#required-packages" id="toc-required-packages" class="nav-link" data-scroll-target="#required-packages">Required packages</a></li>
   <li><a href="#setting-up-an-r-project" id="toc-setting-up-an-r-project" class="nav-link" data-scroll-target="#setting-up-an-r-project">Setting up an R project</a></li>
+  <li><a href="#loading-the-packages" id="toc-loading-the-packages" class="nav-link" data-scroll-target="#loading-the-packages">Loading the packages</a></li>
   </ul></li>
   <li><a href="#introduction-histograms" id="toc-introduction-histograms" class="nav-link" data-scroll-target="#introduction-histograms">Introduction: Histograms</a>
   <ul class="collapse">
@@ -173,10 +174,12 @@ Type, don’t copy-paste – at home
 <h3 class="anchored" data-anchor-id="setting-up-an-r-project">Setting up an R project</h3>
 <p>Next, in RStudio, click on <code>File &gt; New Project... &gt; New Directory</code>. Navigate to somewhere on your computer where you want to create a new directory and give this directory a name (for instance, <code>DatasetsAndGraphs</code>). You will use this directory to store the data and scripts that you’ll need for drawing the graphs in as well for saving the graphs themselves to. You don’t have to tick the other options.</p>
 <p>When you’re done, close RStudio. Navigate to the directory you’ve just created. You should find an <code>.Rproj</code> file there. Double-click it. If all is well, RStudio should fire up.</p>
-<p>Create the following subdirectories in the directory you’re currently in: <code>data</code>, <code>scripts</code> and <code>figs</code>. WHERE TO FIND DATA.</p>
-<!-- ### A new script -->
-<!-- Click on `File > New File > R Script`. -->
-<!-- Start the new script with the following two lines: -->
+<p>Create the following subdirectories in the directory you’re currently in: <code>data</code>, <code>scripts</code> and <code>figs</code>.</p>
+<p>On <a href="https://github.com/janhove/DatasetsAndGraphs">github.com/janhove/DatasetsAndGraphs</a>, you can find a couple of datasets (under <code>data</code>) as well as an R script that defines a new function we’ll use (under <code>functions</code>). Put the datasets in your own <code>data</code> directory and the R script in your own <code>functions</code> directory.</p>
+</section>
+<section id="loading-the-packages" class="level3">
+<h3 class="anchored" data-anchor-id="loading-the-packages">Loading the packages</h3>
+<p>Load the <code>here</code> and <code>tidyverse</code> packages.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">

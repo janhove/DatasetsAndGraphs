@@ -21,7 +21,6 @@ The focus is on drawing plots of raw data
 For an introduction to visualising statistical models, see 
 [_Visualising statistical uncertainty using model-based graphs_](https://janhove.github.io/visualise_uncertainty/).
 
-
 ::: {.callout-tip}
 ## Type, don't copy-paste -- at home
 You're going to take away much more from this primer
@@ -59,11 +58,15 @@ You should find an `.Rproj` file there. Double-click it. If all is well, RStudio
 should fire up.
 
 Create the following subdirectories in the directory you're currently in:
-`data`, `scripts` and `figs`. WHERE TO FIND DATA.
+`data`, `scripts` and `figs`.
 
-<!-- ### A new script -->
-<!-- Click on `File > New File > R Script`. -->
-<!-- Start the new script with the following two lines: -->
+On [github.com/janhove/DatasetsAndGraphs](https://github.com/janhove/DatasetsAndGraphs),
+you can find a couple of datasets (under `data`) as well as an R script 
+that defines a new function we'll use (under `functions`). Put the datasets in your
+own `data` directory and the R script in your own `functions` directory.
+
+### Loading the packages
+Load the `here` and `tidyverse` packages.
 
 ```{r}
 library(here)
