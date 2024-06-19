@@ -1,0 +1,1135 @@
+---
+title: "Working with datasets in R: A primer"
+author: "Jan Vanhove"
+date: "28 June 2024"
+format:
+  html:
+    theme: yeti
+    toc: true
+    number-sections: false
+    code-line-numbers: false
+editor: source
+---
+
+```{r, echo = FALSE}
+set.seed(2024-06-28)
+```
+
+## Goal
+The goal of this primer is to furnish you with the basic tools and knowledge
+to organise, manipulate, and query datasets in research contexts.
+
+::: {.callout-tip}
+## Type, don't copy-paste -- at home
+You're going to take away much more from this primer
+if you copy the code snippets by _typing_ them rather
+than by copy-pasting them.
+That said, I strongly advise you to do so in your own
+time and not as you're attending the lecture:
+Some things are bound to go wrong (perhaps a comma
+in the wrong spot, a missing bracket or an upper-case
+letter that should have been a lower-case one), and
+as you're trying to fix the errors, you'll lose track of the lecture.
+
+So work through the code snippets at home, and be patient with yourselves.
+:::
+
+<!-- ::: {.callout-warning} -->
+<!-- ## Tip with Title -->
+
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+
+<!-- ::: {.callout-important} -->
+<!-- ## Tip with Title -->
+
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+
+<!-- ::: {.callout-caution} -->
+<!-- ## Tip with Title -->
+
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+
+<!-- ::: {.callout-caution collapse="true"} -->
+<!-- ## Expand To Learn About Collapse -->
+
+<!-- This is an example of a 'folded' caution callout that can be expanded by the user. You can use `collapse="true"` to collapse it by default or `collapse="false"` to make a collapsible callout that is expanded by default. -->
+<!-- ::: -->
+
+
+## Compiling and organising a dataset
+Let's say we've run a study in which speakers of German read a couple
+of words in Swedish and were asked to guess what these words might mean.
+An excerpt from the raw data might look like this, with the words having
+been shown to the participants in the order in which they are listed:
+
+* Participant 1034. Woman, 51 years.
+  + Word: _söka_. Translation: _Socken_ (incorrect).
+  + Word: _försiktig_. Translation: _vorsichtig_ (correct).
+  + Word: _mjölk_. Translation: _Milch_ (correct).
+  + Word: _behärska_. No translation given.
+  + Word: _fiende_. Translation: _finden_ (incorrect).
+* Participant 2384. Woman, 27 years.
+  + Word: _fiende_. No translation given.
+  + Word: _behärska_. No translation given.
+  + Word: _försiktig_. Translation: _vorsichtig_ (correct).
+  + Word: _mjölk_. Translation: _Milch_ (correct).
+  + Word: _söka_. Translation: _Socke_ (incorrect).
+* Participant 8667. Woman, 27 years.
+  + Word: _mjölk_. Translation: _Milch_ (correct).
+  + Word: _behärska_. No translation given.
+  + Word: _fiende_. Translation: _finden_ (incorrect).
+  + Word: _söka_. Translation: _suchen_ (correct).
+  + Word: _försiktig_. Translation: _vorsichtig_ (correct).
+* Participant 5901. Man, 15 years.
+  + Word: _behärska_. Translation: _beherrschen_ (correct).
+  + Word: _mjölk_. Translation: _milch_ (sic.; correct).
+  + Word: _försiktig_. Translation: _vorsichtig_ (correct).
+  + Word: _fiende_. Translation: _feinde_ (sic.; correct; actually _Feind_).
+  + Word: _söka_. Translation: _socken_ (sic.; incorrect).
+  
+There are lots of ways in which we could represent these data in a spreadsheet.
+Let's look at a few rules of thumb.
+  
+### Long datasets tend to be more practical than wide ones
+We'll concern ourselves strictly with **rectangular** datasets.
+These are datasets in which the information is laid out in rows and columns
+and in which all columns have the same length, and all rows have the same width.
+Examples of non-rectangular data formats are JSON and XML -- see [here](https://json.org/example.html).
+
+Broadly speaking, we can organise our data in a **wide** format or in a **long** format.
+In a wide format, all pieces of information related to a unit of data collection
+are organised in a single row. For instance, we could think of each participant
+in the study as a unit of data collection, in which case we could lay out the data
+as in @fig-wide-subject. Note that the spreadsheet contains a column for each word
+that indicates the position in which it was presented to the participants.
+Alternatively, we could think of each word as a unit of data collection and organise
+the data like in @fig-wide-item.
+
+![A wide dataset with one row per participant.](figs/wide_data_subject.png){#fig-wide-subject}
+
+![A wide dataset with one row per word.](figs/wide_data_item.png){#fig-wide-item}
+
+In a long format, all pieces of information pertaining to an observational
+unit are organised in a single row. It's difficult to precisely define
+what units of data collection and observational units are, and it wouldn't be
+too useful to have a precise definition, anyway. But in the present example,
+the observational units would be the individual responses, i.e., the individual
+translations. @Fig-long-data shows how the same data look like when organised
+in a long format.
+
+![A long dataset with one row per word per participant. Long datasets tend to be easier to manage and to analyse than wide ones.](figs/long_data.png){#fig-long-data}
+
+It's usually easier to work with data in a long-ish format compared to with
+data in a wide-ish format. Moreover, when you do need your data in a wide-ish
+format for data analysis, converting a longer dataset to a wider one is typically
+easier than vice versa.
+
+Make sure that all rows can be interpreted independently of one another.
+What we want to avoid is that we can't make sense of the data in some row
+because we need data from another row to do so, and this other row was
+deleted, or the order of the rows has changed, etc.
+For instance, in @fig-long-data, we also have a column with the `Position`s,
+even though we could have derived this information from the ordering of the rows.
+But once a row gets deleted or once the order of the rows gets permuted,
+we'd lose this piece of information.
+So don't organise the data like in @fig-long-data-nicht-so.
+
+![Not like this! In this dataset, several cells are left empty as their contents can be derived from other cells. But this will result in difficulties when analysing the data. Moreover, deleting some rows or changing their order would make it impossible to reconstruct the intended contents of these empty cells.](figs/long_data_nicht_so.png){#fig-long-data-nicht-so}
+
+::: {.callout-important}
+## Datasets are different from tables
+
+@Fig-long-data-nicht-so employs a trick often used 
+when presenting data in a table: leave out information that didn't change
+compared to the last row.
+But the goal of a table is to _communicate_ data or patterns in data,
+not to organise the data so that they can be analysed.
+:::
+
+
+Furthermore, the dataset needs to be rectangular. 
+@Fig-long-data-schlecht shows what _not_ to do: The additional rows reporting
+some averages don't fit in with the rest of the dataset ("Prozent Männer:" is 
+not the ID of a `Versuchsperson`, and "30" is not a `Geschlecht`.)
+
+![Not like this! This dataset is not rectangular.](figs/datensatz_schlecht.png){#fig-long-data-schlecht}
+
+
+
+### Use short but descriptive variable names
+Make your life during the data analysis easier by using short but descriptive
+labels for variables or values in the spreadsheet.
+By doing so, you avoid that you constantly need to look up in the project's codebook 
+what the labels mean, thereby reducing the likelihood that you'll make errors.
+Moreover, you save yourself some typing.
+
+A few examples:
+
+* When working with questionnaire data, don't simply label the columns with the
+number of the question in the questionnaire (e.g., `Q3` or `Question17`).
+Instead, use more descriptive labels such as `DegreeFather` oder `DialectUse`.
+* If you have a column labelled `Sex` that is filled with 1s and 0s, then you may
+end up having to look up if the 1s refer to men or to women. Instead, either fill
+the column with `m(an)` and `w(oman)` values, or rename the column `Man`, so that you 
+know that the 1s refer to men.
+* Try to strike a balance between descriptive power and length. For instance, 
+a variable named `HowOftenDoYouSpeakStandardGerman` will get on your nerves before
+long; `SpeakStandard` could be sufficient.
+
+::: {.callout-important}
+## Use a codebook
+Having short and descriptive variable names is not an excuse for not maintaining
+a codebook that spells out precisely what each variable in the dataset refers to.
+[[Example of a codebook](https://osf.io/d9gnh)].
+:::
+
+### Label missing values unambiguously
+In @fig-long-data, I left some of the translation cells empty.
+From this, I can deduce that the word was presented to the participant
+but that he or she did not translate the word.
+However, it could have been possible that some participants were inadvertently 
+never shown a particular word (e.g., due to a programming error)
+or that some of the participants' were irretrievably lost.
+We should enable ourselves to distinguish between these cases, 
+for instance by marking the latter cases using `NA` (_not available_).
+
+If you want to be able to tell apart different reasons for missing data
+(such as data loss, programming errors, participants' refusal to answer a certain
+question, participants' being absent from a data collection etc.),
+it's probably easiest to just write `NA` in the column and add another column
+with comments detailing the reasons for the missingness.
+
+::: {.callout-tip}
+## Don't use numbers to encode missingness
+Some data logging applications use -99 or -9999 to encode missingness.
+The problem with this is that, sometimes, -99 or -9999 don't immediately stand
+out as conspicuous values.
+:::
+
+### Reduce redundancy by splitting up datasets
+The spreadsheet above contain several repeated pieces of information.
+For instance, for all five translations provided by participant 1034,
+we indicated that they were provided by a woman aged 51.
+We can eliminate this source of redundancy by managing a handful
+of smaller datasets rather than just a single large one.
+More specifically, we can manage a dataset that contains all information
+that depends _just_ on the participants, see @fig-participants.
+Each participant has a unique ID (here: `Versuchsperson`),
+and the dataset contains contains a single row for each participant.
+If we need to correct an entry related to, say, some participant's age,
+we just need to change it here -- once -- rather than five times in
+the larger dataset.
+
+![The first smaller dataset only contains information concerning the participants.](figs/versuchspersonen.png){#fig-participants}
+
+By the same token, we can put all information that depends _just_
+on the stimuli used in a separate dataset, see @fig-words.
+Here, too, each stimulus has a unique ID (here: `Wort`).
+
+![The second smaller dataset only contains information concerning the words.](figs/woerter.png){#fig-words}
+
+The third dataset then only contains information that depends
+on the _combination_ of a particular participant and a particular word.
+As shown in @fig-translations, each row in this dataset contains
+the IDs of both the participant and the stimulus that the response is related to.
+But any other information related to just the word or to just the participant
+is left out of this dataset.
+As we'll see shortly, we can easily add the information related to the participants
+or to the words to this dataset from the other two datasets.
+
+![The third dataset only contains the translations.](figs/uebersetzungen.png){#fig-translations}
+
+### Miscellaneous tips
+
+* Mind capitalisation. For some programs and computer languages, `Frau` and `frau`
+are the same value; for others (including R), they are not.
+* Mind trailing spaces. `Mann ` (with trailing space) and `Mann` (without trailing space) are different values to a computer.
+* Special symbols, including the Umlaut, sometimes lead to problems, especially when collaborating with people whose localisation settings differ from yours.
+* Format dates in the YYYY/MM/DD format. This way, if you alphabetically sort the data,
+they're already in chronological order.
+* Don't use colour-coding in your spreadsheet. Or if you do use it, be aware that you'll lose this information once you import your data into your statistics program.
+
+::: {.callout-tip}
+## Work as little as possible in the spreadsheet
+After you've entered your data into a spreadsheet, all further steps in 
+your analysis should be carried out in R (or Python, or Julia, or what-have-you).
+Don't calculate, sort, copy, paste, move, reshape, draw graphs etc. in Excel or whatever
+spreadsheet program you prefer. 
+Treat your finished spreadsheet as the immutable source of data from which
+your results will be obtained, so that when in doubt, it's clear which 
+file you should go back to.
+
+When using R (or Python, or Julia, or whatever), use (a) script(s) to read in
+the original dataset and convert the data in it to a format more amenable to
+analysis, but do not overwrite the original file.
+:::
+
+::: {.callout-tip}
+## Use data validation
+When working in a spreadsheet program, you can use the data validation functions
+to minimise the chances that you enter faulty data. For instance, if you know
+that the possible responses to a certain questions are either integers from
+0 to 5 or `NA`, make a data validation rule that prevents you from entering 
+erroneous data.
+
+Also see the blog post [_A data entry form with failsafes_](https://janhove.github.io/posts/2018-07-06-data-entry-failsafes/).
+:::
+
+## Reading in datasets
+With the data available in a rectangular spreadsheet format,
+the next challenge is to load them into a program capable of 
+analysing them. Several (free) options are available
+([JASP](https://jasp-stats.org/), [Python](https://wesmckinney.com/book/), [Julia](https://julialang.org/), ...), but we'll focus on R complemented
+with the `tidyverse` suite. The main reasons for this are that
+R is more popular in the humanities and the social sciences and that
+I'm just more proficient in R. Hadley Wickham lists some [further reasons](https://adv-r.hadley.nz/introduction.html#why-r).
+
+::: {.callout-note}
+## R, RStudio, and the tidyverse
+To install R, visit the [R Project website](https://www.r-project.org).
+
+In addition, I recommend you install RStudio, which facilitates working
+with R. To do so, visit the [Posit website](https://posit.co) and download
+the open source desktop version of RStudio.
+
+Once you've installed R and RStudio, open RStudio, and go to `Tools > Global options...`.
+In the tab `General, Basic`, make sure to _untick_ the option 'Restore .RData into workspace at startup' and select the option 'never' for 'Save workspace to .RData on exit'.
+These settings help ensure that you're starting from a clean slate each time you open RStudio and prevent the results of calculations in previous sessions from messing up your analyses.
+Additionally, in the tab `Code, Editing`, tick the box next to 'Use native pipe operator, |>'. We'll encounter this pipe operator shortly.
+Finally, I recommend setting the default text encoding to UTF-8 (`Code, Saving`).
+
+The functionality of R can be extended by installing further packages.
+We'll be using two of these. The first is the `here` package, which makes
+it easier to read in data files if you're working in a complex file system.
+Nothing in what follows hinges on your using the `here` package or not;
+I just find that it makes my life easier. To install the `here` package, type
+the following command at the R prompt:
+
+```{r, eval = FALSE}
+install.packages("here")
+```
+
+The second package isn't optional if you want to following along with the rest
+of this course: The `tidyverse` actually bundles a couple of package that 
+are based on a set of shared principles and that facilitate working with
+datasets enormously. You can install it like so:
+
+```{r, eval = FALSE}
+install.packages("tidyverse")
+```
+
+:::
+
+::: {.callout-note}
+## R projects
+
+```{r}
+library(here)
+library(tidyverse)
+```
+
+Incidentally, you don't need to install these packages every time you need them,
+but you do need to load them every time you need them in a new session.
+I recommend including the packages you need at the top of your script.
+:::
+
+### Excel files
+We'll focus on reading in two kinds of spreadsheets: Excel spreadsheets
+in the XLS(X) format, and CSV files.
+
+In order to read in XLS(X) files, we need the `readxl` package.
+This package is part of the `tidyverse` suite, but it does not get loaded
+automatically as you load the `tidyverse` suite. So we load it separately:
+
+```{r}
+library(readxl)
+```
+
+Assuming the file `uebersetzungen.xlsx` is located in the `data` subdirectory
+of your R project directory, we can read it into R as follows.
+
+```{r}
+translations <- read_excel(here("data", "uebersetzungen.xlsx"))
+```
+
+The dataset is now loaded as a so-called _tibble_ named `translations`.
+We can display it by simply typing its name at the prompt:
+```{r}
+translations
+```
+
+::: {.callout-note}
+## Data frames and tibbles
+Rectangular data sets are referred to as _data frames_ in R.
+The `tidyverse` slightly changes their functionality, mostly in order to allow
+for prettier displaying, and refers to them as _tibbles_.
+:::
+
+::: {.callout-warning}
+## Empty strings interpreted as missing
+
+Note that the empty cells are automatically interpreted as missing data (`<NA>`).
+The documentation of the `read_excel` function, which you can access by typing
+`?read_excel` at the R prompt, suggests that we can override this behaviour,
+but [we can't](https://github.com/tidyverse/readxl/issues/572).
+:::
+
+If, instead of printing the entire tibble at the prompt, we just want to display
+the first few rows, we can use `slide_head`:
+```{r}
+slice_head(translations, n = 4)
+```
+
+`slice_tail` works similarly. If you want to display a random selection of rows,
+you can use `slice_sample`:
+
+```{r}
+slice_sample(translations, n = 5)
+```
+Again, for details, you can check the documentation of these functions that is available
+at `?slice_head`.
+
+### CSV files
+A popular format for storing spreadsheets is the CSV format.
+CSV is short for _comma-separated values_:
+Cells on the same row are separated by commas, see @fig-csv.
+Sometimes, text strings are additionally surrounded by quotation marks.
+
+![A spreadsheet stored as _comma-separated values_.](figs/csv.png){#fig-csv}
+
+To read in CSV files, we can use the `read_csv` function, which
+is part of the `readr` package, which in turn is automatically loaded
+when the `tidyverse` suit is loaded:
+
+```{r}
+translations <- read_csv(here("data", "uebersetzungen.csv"))
+translations
+```
+We receive a couple of messages (no errors!).
+These show that the `read_csv` function correctly recognised that
+the columns `Wort` and `Übersetzung` contain text ('chr', character) strings,
+whereas `Versuchsperson`, `Position` and `Richtig` contain numbers
+('dbl' for 'double', a number format).
+
+::: {.callout-note}
+## Empty strings interpreted as missing
+With `read_csv`, we can specify that only cells containing "NA" 
+are marked as missing data:
+
+```{r}
+translations2 <- read_csv(here("data", "uebersetzungen.csv"), na = "NA")
+translations2
+```
+:::
+
+Let's also read in the datasets containing the information pertaining
+to the participants and items:
+
+```{r}
+participants <- read_csv(here("data", "versuchspersonen.csv"))
+items <- read_csv(here("data", "woerter.csv"))
+```
+
+::: {.callout-note}
+## Different CSV formats
+If you save an Excel spreadsheet as a CSV file on a French- or German-language
+computer system, the cells will be separated using semicolons rather than using
+commas. The reason is that commas are used as decimal separators in French
+and German. To read in 'CSV' files that use semicolons as cell separators,
+you can use the `read_csv2` function.
+
+Incidentally, if you use LibreOffice.org Calc instead of Excel, you can choose
+which cell separator gets used if you export a spreadsheet as a CSV file.
+:::
+
+::: {.callout-note}
+## `read_csv` vs. `read.csv`
+More seasoned R users are probably already familiar with the `read.csv` function
+(with a dot rather than an underscore). The `read_csv` function is merely the
+`tidyverse` counterpart to this function. The practical differences between
+them are negligible.
+:::
+
+### Other formats
+For reading in data from Google Sheets, see [googlesheets4](https://googlesheets4.tidyverse.org/).
+
+For interacting with Google Drive, see [googledrive](https://googledrive.tidyverse.org/).
+
+For reading in SPSS, Stata and SAS files, see [haven](https://haven.tidyverse.org/).
+
+## Joining datasets
+Having read in our three datasets as `translations`, `participants`, and `items`,
+we want to merge these datasets into one large dataset. The most useful function
+for this is `left_join`, which takes the dataset passed as its `x` argument
+and adds to this the corresponding rows from the `y` dataset:
+```{r}
+all_data <- left_join(x = translations, y = participants)
+```
+Note that the `left_join` function recognises that the variable shared
+between both datasets is called `Versuchsperson`. Hence, the information
+related to participant 1034 contained in `participants` is added to each
+row in `translations` where the `Versuchsperson` value is 1034,
+and similarly for the other participants:
+
+```{r}
+all_data
+```
+If you don't want the `left_join` function to figure out what the shared variable
+is, you can specify it explicitly:
+```{r, eval = FALSE}
+all_data <- left_join(x = translations, y = participants, by = "Versuchsperson")
+```
+If the shared variable has different names in the different datasets, you can use
+something like
+```{r, eval = FALSE}
+new <- left_join(x = left_dataset, y = right_dataset, by = join_by(var_left == var_right))
+```
+See `?join_by` for more information.
+
+If there are values in the shared variable that occur in the `x` dataset
+that don't occur in the `y` dataset, the values in the added columns will read `NA`
+for these rows.
+
+Further join functions are the following, see `?join` for details:
+
+* `right_join`: All entries in `y` are kept. Corresponding entries in `x` are added.
+* `full_join`: All entries both datasets are kept. `NA`s are added if there is no corresponding entry in the other dataset.
+* `inner_join`: Only keep entries in `x` for which there is a corresponding entry in `y`. Add these corresponding entries.
+* `semi_join`:  Only keep entries in `x` for which there is a corresponding entry in `y`. Don't add these corresponding entries.
+* `anti_join`: Only keep entries in `x` for which there are _no_ corresponding entries in `y`.
+
+In the current example, `left_join`, `full_join` and `inner_join` would all yield the same result.
+But this isn't always the case.
+
+Let's also add the information pertaining to the words:
+```{r}
+all_data <- left_join(all_data, items)
+```
+
+Incidentally, another way of achieving the same result is this:
+```{r}
+all_data <- translations |> 
+  left_join(participants) |> 
+  left_join(items)
+```
+
+
+### Exercise: join functions
+1. Use the following code to generate two tibbles called `left` and `right`:
+```{r}
+left <- tibble(A = c("a", "b", "c", NA),
+               B = c(1, 2, NA, 4))
+right <- tibble(B = c(1, 3, 4, 4),
+                C = c(10, NA, 12, 7))
+left
+right
+```
+
+2. _Without running these commands_, predict what their output would look like:
+```{r, eval = FALSE}
+left_join(x = left, y = right)
+right_join(x = left, y = right)
+full_join(x = left, y = right)
+inner_join(x = left, y = right)
+semi_join(x = left, y = right)
+semi_join(x = recht, y = left) # !
+anti_join(x = left, y = right)
+anti_join(x = right, y = left) # !
+```
+
+3. Now run the commands above to verify your predictions.
+
+4. Create two new tibbles using the code below:
+
+```{r}
+left <- tibble(A = c("a", "b"),
+               B = c(1, NA))
+right <- tibble(B = c(1, NA, NA),
+                C = c(0, 1, 2))
+left
+right
+```
+
+5. Consult the help page for `left_join` and look up the `na_matches` parameter
+under 'Arguments'. Predict what the output of the following two commands would look like,
+and only then check your answer.
+
+```{r}
+left_join(left, right)
+left_join(left, right, na_matches = "never")
+```
+
+
+
+
+## Queries
+
+### Selecting by row number
+We can select the third row of a dataset like so:
+```{r}
+slice(all_data, 3)
+```
+Alternatively, we can write this command as follows.
+The symbols `|>` allow us to take an object (here: `all_data`)
+and pass it to a function as its first argument.
+As we'll later see, we can use `|>` to string together a host of function calls
+without creating illegible code.
+
+```{r}
+all_data |> 
+  slice(3)
+```
+
+We can also select multiple rows:
+```{r}
+# Rows 5 and 7
+all_data |> 
+  slice(c(5, 7))
+# Rows 5 to (and including) 7
+all_data |> 
+  slice(5:7)
+```
+
+The results of such actions can be stored as separate objects, for instance, like so:
+```{r}
+rows7_12 <- all_data |> 
+  slice(7:12)
+rows7_12
+```
+We can export this new object as a CSV file like so:
+```{r}
+write_csv(rows7_12, here("data", "rows7_12.csv"))
+```
+
+### Selecting by values
+Selecting rows by their number isn't too useful.
+But selecting rows satisfying some set of conditions is very useful.
+Here are a few examples:
+```{r}
+# All data corresponding to the word 'fiende'
+all_data |> 
+  filter(Wort == "fiende")
+# Note: use '!=' for 'not equal to'.
+
+# All data corresponding to participants older than 30
+all_data |> 
+  filter(Alter > 30)
+# Note: use '>=' for 'at least as old as', 
+#           '<=' for 'no older than', 
+#        and '<' for 'younger than'.
+```
+We can use `is.na` to check for missing values. 
+Note the use of `!` to negate a condition.
+
+```{r}
+all_data |> 
+  filter(is.na(Übersetzung))
+all_data |> 
+  filter(!is.na(Übersetzung))
+```
+We can string together multiple `filter` calls:
+
+```{r}
+# incorrect translations to first word
+all_data |> 
+  filter(Position == 1) |> 
+  filter(Richtig == 0)
+```
+
+An alternative way of writing this is as follows:
+```{r}
+all_data |> 
+  filter(Position == 1 & Richtig == 0)
+```
+
+'or' conditions can be created using `|`:
+```{r}
+# translations to first word or incorrect translations
+all_data |> 
+  filter(Position == 1 | Richtig == 0)
+```
+
+Note that in logic, 'or' is always inclusive.
+Exclusive 'or' ('xor') can be obtained as follows:
+
+```{r}
+# translations to first word or incorrect translations, but not both
+all_data |> 
+  filter(Position == 1 | Richtig == 0) |> 
+  filter(!(Position == 1 & Richtig == 0))
+```
+
+Alternatively,
+```{r}
+all_data |> 
+  filter(xor(Position == 1, Richtig == 0)) 
+```
+
+#### Exercise
+1. Run the following commands:
+```{r}
+d1 <- all_data |> 
+  filter(Übersetzung == "vorsichtig")
+d2 <- all_data |> 
+  filter(Übersetzung != "vorsichtig")
+```
+
+2. Explain what both commands achieve.
+
+3. How many rows are there in `d1`? How many in `d2`? How many in `all_data`? Explain.
+
+4. Create a tibble `d3` that contains only those rows in `all_data` where
+the participants did not translate the word as _vorsichtig_.
+
+### Selecting columns
+Sometimes, a dataset is too cumbersome to handle because it contains a lot
+of irrelevant columns. Using `select`, we can select those columns that are of interest.
+For instance,
+```{r}
+all_data |> 
+  select(Wort, RichtigeÜbersetzung, Übersetzung) |> 
+  slice_head(n = 5)
+```
+There are a couple of auxiliary functions that make it easier
+to select columns. These are especially useful when working with large datasets.
+Examples are `contains()` and `starts_with()`:
+
+```{r}
+all_data |> 
+  select(contains("Übersetzung"))
+
+all_data |> 
+  select(starts_with("Richt"))
+```
+See the [tidyselect documentation](https://tidyselect.r-lib.org/reference/language.html) for further functions.
+
+### Further examples
+We can string together different types of commands:
+```{r}
+# All translations for 'fiende'
+all_data |> 
+  filter(Wort == "fiende") |> 
+  select(Übersetzung)
+
+# All *distinct* translations for 'behärska':
+all_data |> 
+  filter(Wort == "behärska") |> 
+  select(Übersetzung) |> 
+  distinct()
+```
+
+Without the pipe (`|>`), these commands become difficult to read:
+```{r}
+distinct(select(filter(all_data, Wort == "behärska"), Übersetzung))
+```
+
+
+
+## Pivoting
+In the course of an analysis, it is often necessary to convert a
+long-ish dataset to a wider one, and vice versa. This process is known
+as _pivoting_. To illustrate pivoting, we'll make use of a more realistic --
+and more complicated -- dataset derived from a longitudinal project on the
+development of reading and writing skills in Portuguese--French and
+Portuguese--German bilingual children ([Desgrippes et al. 2017](https://doi.org/10.21832/9781783099054-006), [Pestana et al. 2017](https://doi.org/10.21832/9781783099054-005)).
+
+We read in the dataset `helascot_skills.csv` as `skills`:
+
+```{r}
+skills <- read_csv(here("data", "helascot_skills.csv"))
+skills
+```
+
+For each participant (`Subject`) at each `Time` (T1, T2, T3) and for each `LanguageTested` (Portuguese, French, German),
+we have up to three scores, `Reading`, `Argumentation` and `Narration`, arranged
+next to each other. But let's say we wanted to compute, for each participant,
+their progress on each task in each language from T1 to T2 and from T2 to T3.
+The way the data are laid out at present, this would at best be pretty difficult to do.
+But it would be easy if only the data were arranged differently, namely with
+all three measurements per participant and task next to each other.
+We can convert this dataset to the desired format in two steps.
+
+First, we make the dataset longer by stacking the different scores under each other
+rather than next to each other. To this end, we use the function `pivot_longer()`
+and specify that we want to stack the values in the `Reading`, `Argumentation`, and `Narration` columns
+under each other, that we want to call the resulting column `Score`, 
+and that we want to put the column names in a new column called `Skill`:
+
+```{r}
+skills_longer <- skills |> 
+  pivot_longer(cols = c("Reading", "Argumentation", "Narration"),
+               names_to = "Skill", values_to = "Score")
+skills_longer
+```
+
+Then, we make this tibble wider by putting the three measurements
+per skill and language next to each other using `pivot_wider()`.
+We also prefix the `Time` values with a `T`.
+
+```{r}
+skills_wider_time <- skills_longer |> 
+  pivot_wider(names_from = Time, values_from = Score,
+              names_prefix = "T")
+skills_wider_time
+```
+Using `mutate()`, we can now easily compute the differences between `T1` and `T2`
+and between `T2` and `T3`:
+
+```{r}
+skills_wider_time |> 
+  mutate(ProgressT1_T2 = T2 - T1,
+         ProgressT2_T3 = T3 - T2) |> 
+  select(Subject, LanguageTested, Skill, ProgressT1_T2, ProgressT2_T3)
+```
+Now imagine that we wanted to compute, for each participant in each skill at each data collection,
+the difference between the Portuguese score and the German/French score. The first step is the same,
+resulting in `skills_longer`. The second step is now similar, but we put the different
+languages next to each other:
+```{r}
+skills_wider_language <- skills_longer |> 
+  pivot_wider(names_from = LanguageTested, values_from = Score)
+skills_wider_language
+```
+Incidentally, not all values for `German` are `NA`. It's just that the
+first couple of children were tested in French and Portuguese, not in German.
+We can check this like so:
+```{r}
+skills_wider_language |> 
+  slice_sample(n = 10)
+```
+If we needed to, we could make this dataset wider still:
+```{r}
+skills_wider_time_language <- skills_longer |> 
+  pivot_wider(names_from = c(LanguageTested, Time), # combination of Language and Time
+              values_from = Score)
+skills_wider_time_language
+```
+We could reconvert this tibble to a long one using the code snippet below.
+The code becomes a bit more complex: The notation `French_1:German_3` selects
+all columns between `French_1` and `German_3` (including), whereas
+a so-called _regular expression_ (regex) is used to parse these column names
+into the `Language` bit and into the `Time` bit.
+For the present example, we don't need this code snippet since we already have
+`skills_longer`. But I wanted to illustrate that such conversions are _possible_.
+If you ever need to convert a similar dataset to a longer format, 
+you now know that you can look up the details on the help page of `pivot_longer()`
+(`?pivot_longer`) and take it from there:
+
+```{r}
+skills_wider_time_language |> 
+  pivot_longer(cols = French_1:German_3,
+               names_to = c("Language", "Time"),
+               names_pattern = "(.*)_(.*)",
+               values_to = "Score")
+```
+Alternatively, we could have used `starts_with(c("French", "Portuguese", "German"))`
+to select the relevant columns.
+
+## Summaries
+Using the `summarise()` function, we can easily summarise large tibbles.
+For instance, we can compute the average (mean) narration and argumentation
+scores in the `skills` tibble like so:
+```{r}
+skills |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE))
+```
+We set the `na.rm` parameter in the `mean()` call to `TRUE` since there are several
+missing observations in both the `Narration` and `Argumentation` variable.
+If we didn't set `na.rm` to `TRUE`, the result of both computations would be `NA`.
+By setting `na.rm` to `TRUE`, missing observations are ignored.
+
+`summarise()` is often used in conjuction with `group_by()`, which splits up a 
+tibble into subgroups. This way, we can straightforwardly compute summaries for
+different subgroups. For instance, if we wanted to compute the mean narration
+and argumentation scores for each time of data collection and each language tested,
+we could use the following code snippet:
+```{r}
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE),
+            .groups = "drop")
+```
+
+By setting `.groups = "drop"`, you make sure that the grouping applied to `skills` 
+doesn't apply to the summary tibble any more. (It's not so important.)
+
+We can treat these summary tibbles like ordinary tibbles and apply all of the other commands
+to them:
+```{r}
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            .groups = "drop") |> 
+  pivot_wider(names_from = "Time", names_prefix = "T", values_from = "mean_narr")
+```
+
+In addition to `mean()`, here are some further functions that are often
+used when computing summaries; see the functions' help pages for details:
+
+* `median()`,
+* `quantile()`,
+* `min()` and `max()`,
+* `sd()` and `var()` for the sample standard deviation and sample variance, respectively,
+* `mad()` for the (adjusted) median absolute deviation,
+* `n()` for obtaining the number of observations,
+* `sum()`.
+
+The `mean()` function can also be used to compute proportions.
+Consider the following example.
+The `is.na()` function checks if a value is `NA` (in which case
+it returns `TRUE`) or not (`FALSE`). If we compute the `mean()` of a
+bunch of `TRUE/FALSE` values, we obtain the proportion of values
+that are `TRUE`. Similarly, the `sum()` of a bunch of `TRUE/FALSE` values
+is the number of `TRUE` values. Hence, we can quickly obtain the
+proportion, and number, of the missing `Narration` scores for each 
+combination of `Time` and `LanguageTested`:
+
+```{r}
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(
+    prop_narr_NA = mean(is.na(Narration)),
+    nr_narr_NA = sum(is.na(Narration)),
+    n = n(),
+    .groups = "drop"
+  )
+```
+## String manipulation
+It often happens that a single cell in a dataset contains 
+different pieces of information. So, too, it is the case 
+in our current example. The first participant in the dataset is 
+referred to as `A_PLF_1`:
+
+* The `A` in this ID refers to their class.
+* The `PLF` tells us that this participant resided in French-speaking
+Switzerland (`F`), had a Portuguese background (`P`) and took
+Portuguese heritage and language courses (`L`). Other abbreviations in the dataset are `CD`, `CF`, and `CP` for comparison groups in German-speaking 
+Switzerland, French-speaking Switzerland, and Portugal, respectively,
+`PLD` for participants residing in German-speaking Switzerland with a 
+Portuguese background that attended a Portuguese course,
+as well as `PND` and `PNF` for participants in German- and French-speaking
+Switzerland, respectively, with a Portuguese background that did not
+take Portuguese classes.
+* The `1` uniquely identifies this participant within its class.
+
+It could make sense to split up the information contained in this one
+cell into multiple cells. Thankfully, the strings in `Subject` are 
+structured logically and consistently: the different pieces of information
+are separated using underscores (`"_"`). We can hence split these strings
+at the underscores and retrieve the first and second pieces like so:
+
+```{r}
+skills_wider_language <- skills_wider_language |> 
+  mutate(
+    Class = str_split_i(Subject, "_", 1),
+    Group = str_split_i(Subject, "_", 2)
+  )
+# check:
+skills_wider_language |> 
+  select(Subject, Class, Group) |> 
+  sample_n(10)
+```
+The examples/exercises will showcase some further applications of string
+manipulation, but I refer to the (stringr documentation)[https://stringr.tidyverse.org/] for further guidance.
+
+We can now further break down the information contained in the new `Group` column,
+for instance as follows:
+
+```{r}
+skills_wider_language <- skills_wider_language |> 
+  mutate(language_group = case_when(
+    Group == "CP" ~ "Portuguese control",
+    Group == "CF" ~ "French control",
+    Group == "CD" ~ "German control",
+    Group %in% c("PLF", "PNF") ~ "French-Portuguese",
+    Group %in% c("PLD", "PND") ~ "German-Portuguese",
+    .default =  "other"
+  )) |> 
+  mutate(heritage_course = case_when(
+    Group %in% c("PLF", "PLD") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_German = case_when(
+    Group %in% c("CD", "PLD", "PND") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_French = case_when(
+    Group %in% c("CF", "PLF", "PNF") ~ 1,
+    .default =  0
+  )) |> 
+  mutate(has_Portuguese = case_when(
+    Group %in% c("CF", "CD") ~ 0,
+    .default =  1
+  ))
+
+# check:
+skills_wider_language |> 
+  select(Subject, language_group, heritage_course, has_German, has_French, has_Portuguese) |> 
+  sample_n(10)
+```
+
+## A full-fledged example
+We had the children in the French/German/Portuguese project write
+short narrative and argumentative texts in each of their languages
+at three points in time. 
+The quality of these texts was scored
+using a grid ([Desgrippes et al. 2017](https://doi.org/10.21832/9781783099054-006)); 
+it is these scores that are listed in the `skills` tibble
+we worked with above.
+In addition, 3,060 of these texts were rated for their lexical richness
+by between two and eighteen naïve (i.e., non-instructed) raters each
+using a 1-to-9 scale.
+The individual ratings are available in the file `helascot_ratings.csv`.
+Furthermore, we computed a bunch of lexical metrics for each text,
+such as the number of tokens, the mean corpus frequency of the words
+occurring in the text, etc.
+These metric are avilable in the file `helascot_metrics.csv`;
+see [Vanhove et al. (2019)](https://doi.org/10.17239/jowr-2019.10.03.04)
+and [Vanhove (2019)](https://osf.io/6bywg) for details.
+
+We'll use these datasets to answer three questions:
+
+* What's the relation between the average lexical richness ratings per text and the text's Guiraud index? (The Guiraud index is the ratio of the number of types in a text and the square root of the number of tokens in that text.)
+* What's the relation between the average lexical richness ratings per text and the mean corpus frequency of the words occuring in the texts?
+* What's the relation between the grid-based ratings and the lexical richness ratings?
+
+In doing so, we'll need to make use of some of the tools introduced earlier.
+
+### Reading in the data
+Let's start from a clean slate and read in the three datasets:
+
+```{r}
+skills <- read_csv(here("data", "helascot_skills.csv"))
+metrics <- read_csv(here("data", "helascot_metrics.csv"))
+ratings <- read_csv(here("data", "helascot_ratings.csv"))
+```
+
+Inspect the structure of these three datasets. (**How?**)
+Note that
+
+* `skills` contains one row per combination of `Subject`, `Time` and `LanguageTested`;
+* `metrics` contains one row per text, i.e., one row per combination of `Subject`, `Text_Language`, `Text_Type` and `Time`;
+* `ratings` contains one row per rating, i.e., one row per combination of `Rater` and `Text`.
+
+::: {.callout-note}
+These datasets are already pretty clean and a lot of work (partly manual, partly using R,
+partly using other tools) went into creating them.
+See the technical report as well as the R code available from [osf.io](https://osf.io/vw4pc/).
+:::
+
+There are many ways to skin a cat.
+But it seems to me that the following course of action is reasonable:
+
+1. Using `ratings`, compute the average `Rating` per text.
+2. Add these average ratings to `metrics` and draw some plots. (More on plotting in the second part!)
+3. Make `skills` longer and add the average ratings to it. Then draw some more plots.
+
+### Average rating per text
+
+```{r}
+rating_per_text <- ratings |> 
+  group_by(Text, Subject, Text_Language, Text_Type, Time) |> 
+  summarise(mean_rating = mean(Rating),
+            n_ratings = n(),
+            .groups = "drop")
+```
+
+::: {.callout-note}
+## Exercise
+Some of the raters consider themselves native speakers of several languages (`bi-French` etc.), 
+others consider themselves monolingual native speakers (`mono-French` etc.):
+```{r}
+table(ratings$Rater_NativeLanguage)
+```
+What could you do if you wanted to base the average rating per text only on the
+ratings provided by monolingual raters?
+:::
+
+### Add to `metrics`
+The tibbles `metrics` and `rating_per_text` share a variable (`Text`),
+so the average ratings can easily be added to `metrics`:
+
+```{r}
+metrics_ratings <- metrics |> 
+  left_join(rating_per_text)
+```
+
+We'll learn in the second part how to draw meaningful data plots, but here's
+one way of visualising the relationship between `Guiraud` and `mean_rating`:
+
+```{r}
+metrics_ratings |> 
+  ggplot(aes(x = Guiraud, y = mean_rating)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(Text_Language)) +
+  xlab("Guiraud value") +
+  ylab("average lexical richness rating")
+```
+
+Similarly, for `meanSUBTLEX` (average corpus frequency):
+
+```{r}
+metrics_ratings |> 
+  ggplot(aes(x = meanSUBTLEX, y = mean_rating)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(Text_Language)) +
+  xlab("mean SUBTLEX frequency") +
+  ylab("average lexical richness rating")
+```
+
+```{r}
+correlations <- metrics_ratings |> 
+  group_by(Text_Language, Time, Text_Type) |> 
+  summarise(
+    cor_guiraud = cor(mean_rating, Guiraud),
+    cor_frequency = cor(mean_rating, meanSUBTLEX)
+  )
+correlations
+```
+
+### Add to `skills`
+
+```{r}
+rating_gridscore <- skills |> 
+  pivot_longer(Reading:Narration, names_to = "skill",
+               values_to = "grid_score") |> 
+  filter(skill != "Reading") |> 
+  mutate(Text_Type = case_when(
+    skill == "Argumentation" ~ "arg",
+    skill == "Narration" ~ "narr"
+  )) |> 
+  full_join(rating_per_text,
+            by = join_by(Text_Type, Subject, Time, LanguageTested == Text_Language))
+```
+
+```{r}
+rating_gridscore |> 
+  filter(!is.na(grid_score)) |> 
+  filter(!is.na(mean_rating)) |> 
+  ggplot(aes(x = mean_rating, y = grid_score)) +
+  geom_point(shape = 1) +
+  facet_grid(rows = vars(Time, Text_Type),
+             cols = vars(LanguageTested))
+```
+
+```{r}
+rating_gridscore |> 
+  filter(!is.na(grid_score)) |> 
+  filter(!is.na(mean_rating)) |> 
+  group_by(LanguageTested, Time, Text_Type) |> 
+  summarise(
+    cor_score = cor(mean_rating, grid_score),
+    .groups = "drop"
+  )
+```
+
+
+## Suggestions for reading
+The Bible for working with tibbles in R is Wickham et al.'s _R for Data Science_, which is freely available from [r4ds.hadley.nz](https://r4ds.hadley.nz/).

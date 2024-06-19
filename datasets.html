@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jan Vanhove">
+<meta name="dcterms.date" content="2024-06-28">
+
+<title>Working with datasets in R: A primer</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="datasets_files/libs/clipboard/clipboard.min.js"></script>
+<script src="datasets_files/libs/quarto-html/quarto.js"></script>
+<script src="datasets_files/libs/quarto-html/popper.min.js"></script>
+<script src="datasets_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="datasets_files/libs/quarto-html/anchor.min.js"></script>
+<link href="datasets_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="datasets_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="datasets_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="datasets_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="datasets_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#goal" id="toc-goal" class="nav-link active" data-scroll-target="#goal">Goal</a></li>
+  <li><a href="#compiling-and-organising-a-dataset" id="toc-compiling-and-organising-a-dataset" class="nav-link" data-scroll-target="#compiling-and-organising-a-dataset">Compiling and organising a dataset</a>
+  <ul class="collapse">
+  <li><a href="#long-datasets-tend-to-be-more-practical-than-wide-ones" id="toc-long-datasets-tend-to-be-more-practical-than-wide-ones" class="nav-link" data-scroll-target="#long-datasets-tend-to-be-more-practical-than-wide-ones">Long datasets tend to be more practical than wide ones</a></li>
+  <li><a href="#use-short-but-descriptive-variable-names" id="toc-use-short-but-descriptive-variable-names" class="nav-link" data-scroll-target="#use-short-but-descriptive-variable-names">Use short but descriptive variable names</a></li>
+  <li><a href="#label-missing-values-unambiguously" id="toc-label-missing-values-unambiguously" class="nav-link" data-scroll-target="#label-missing-values-unambiguously">Label missing values unambiguously</a></li>
+  <li><a href="#reduce-redundancy-by-splitting-up-datasets" id="toc-reduce-redundancy-by-splitting-up-datasets" class="nav-link" data-scroll-target="#reduce-redundancy-by-splitting-up-datasets">Reduce redundancy by splitting up datasets</a></li>
+  <li><a href="#miscellaneous-tips" id="toc-miscellaneous-tips" class="nav-link" data-scroll-target="#miscellaneous-tips">Miscellaneous tips</a></li>
+  </ul></li>
+  <li><a href="#reading-in-datasets" id="toc-reading-in-datasets" class="nav-link" data-scroll-target="#reading-in-datasets">Reading in datasets</a>
+  <ul class="collapse">
+  <li><a href="#excel-files" id="toc-excel-files" class="nav-link" data-scroll-target="#excel-files">Excel files</a></li>
+  <li><a href="#csv-files" id="toc-csv-files" class="nav-link" data-scroll-target="#csv-files">CSV files</a></li>
+  <li><a href="#other-formats" id="toc-other-formats" class="nav-link" data-scroll-target="#other-formats">Other formats</a></li>
+  </ul></li>
+  <li><a href="#joining-datasets" id="toc-joining-datasets" class="nav-link" data-scroll-target="#joining-datasets">Joining datasets</a>
+  <ul class="collapse">
+  <li><a href="#exercise-join-functions" id="toc-exercise-join-functions" class="nav-link" data-scroll-target="#exercise-join-functions">Exercise: join functions</a></li>
+  </ul></li>
+  <li><a href="#queries" id="toc-queries" class="nav-link" data-scroll-target="#queries">Queries</a>
+  <ul class="collapse">
+  <li><a href="#selecting-by-row-number" id="toc-selecting-by-row-number" class="nav-link" data-scroll-target="#selecting-by-row-number">Selecting by row number</a></li>
+  <li><a href="#selecting-by-values" id="toc-selecting-by-values" class="nav-link" data-scroll-target="#selecting-by-values">Selecting by values</a></li>
+  <li><a href="#selecting-columns" id="toc-selecting-columns" class="nav-link" data-scroll-target="#selecting-columns">Selecting columns</a></li>
+  <li><a href="#further-examples" id="toc-further-examples" class="nav-link" data-scroll-target="#further-examples">Further examples</a></li>
+  </ul></li>
+  <li><a href="#pivoting" id="toc-pivoting" class="nav-link" data-scroll-target="#pivoting">Pivoting</a></li>
+  <li><a href="#summaries" id="toc-summaries" class="nav-link" data-scroll-target="#summaries">Summaries</a></li>
+  <li><a href="#string-manipulation" id="toc-string-manipulation" class="nav-link" data-scroll-target="#string-manipulation">String manipulation</a></li>
+  <li><a href="#a-full-fledged-example" id="toc-a-full-fledged-example" class="nav-link" data-scroll-target="#a-full-fledged-example">A full-fledged example</a>
+  <ul class="collapse">
+  <li><a href="#reading-in-the-data" id="toc-reading-in-the-data" class="nav-link" data-scroll-target="#reading-in-the-data">Reading in the data</a></li>
+  <li><a href="#average-rating-per-text" id="toc-average-rating-per-text" class="nav-link" data-scroll-target="#average-rating-per-text">Average rating per text</a></li>
+  <li><a href="#add-to-metrics" id="toc-add-to-metrics" class="nav-link" data-scroll-target="#add-to-metrics">Add to <code>metrics</code></a></li>
+  <li><a href="#add-to-skills" id="toc-add-to-skills" class="nav-link" data-scroll-target="#add-to-skills">Add to <code>skills</code></a></li>
+  </ul></li>
+  <li><a href="#suggestions-for-reading" id="toc-suggestions-for-reading" class="nav-link" data-scroll-target="#suggestions-for-reading">Suggestions for reading</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Working with datasets in R: A primer</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Jan Vanhove </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 28, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="goal" class="level2">
+<h2 class="anchored" data-anchor-id="goal">Goal</h2>
+<p>The goal of this primer is to furnish you with the basic tools and knowledge to organise, manipulate, and query datasets in research contexts.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Type, don’t copy-paste – at home
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You’re going to take away much more from this primer if you copy the code snippets by <em>typing</em> them rather than by copy-pasting them. That said, I strongly advise you to do so in your own time and not as you’re attending the lecture: Some things are bound to go wrong (perhaps a comma in the wrong spot, a missing bracket or an upper-case letter that should have been a lower-case one), and as you’re trying to fix the errors, you’ll lose track of the lecture.</p>
+<p>So work through the code snippets at home, and be patient with yourselves.</p>
+</div>
+</div>
+<!-- ::: {.callout-warning} -->
+<!-- ## Tip with Title -->
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+<!-- ::: {.callout-important} -->
+<!-- ## Tip with Title -->
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+<!-- ::: {.callout-caution} -->
+<!-- ## Tip with Title -->
+<!-- This is an example of a callout with a title. -->
+<!-- ::: -->
+<!-- ::: {.callout-caution collapse="true"} -->
+<!-- ## Expand To Learn About Collapse -->
+<!-- This is an example of a 'folded' caution callout that can be expanded by the user. You can use `collapse="true"` to collapse it by default or `collapse="false"` to make a collapsible callout that is expanded by default. -->
+<!-- ::: -->
+</section>
+<section id="compiling-and-organising-a-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="compiling-and-organising-a-dataset">Compiling and organising a dataset</h2>
+<p>Let’s say we’ve run a study in which speakers of German read a couple of words in Swedish and were asked to guess what these words might mean. An excerpt from the raw data might look like this, with the words having been shown to the participants in the order in which they are listed:</p>
+<ul>
+<li>Participant 1034. Woman, 51 years.
+<ul>
+<li>Word: <em>söka</em>. Translation: <em>Socken</em> (incorrect).</li>
+<li>Word: <em>försiktig</em>. Translation: <em>vorsichtig</em> (correct).</li>
+<li>Word: <em>mjölk</em>. Translation: <em>Milch</em> (correct).</li>
+<li>Word: <em>behärska</em>. No translation given.</li>
+<li>Word: <em>fiende</em>. Translation: <em>finden</em> (incorrect).</li>
+</ul></li>
+<li>Participant 2384. Woman, 27 years.
+<ul>
+<li>Word: <em>fiende</em>. No translation given.</li>
+<li>Word: <em>behärska</em>. No translation given.</li>
+<li>Word: <em>försiktig</em>. Translation: <em>vorsichtig</em> (correct).</li>
+<li>Word: <em>mjölk</em>. Translation: <em>Milch</em> (correct).</li>
+<li>Word: <em>söka</em>. Translation: <em>Socke</em> (incorrect).</li>
+</ul></li>
+<li>Participant 8667. Woman, 27 years.
+<ul>
+<li>Word: <em>mjölk</em>. Translation: <em>Milch</em> (correct).</li>
+<li>Word: <em>behärska</em>. No translation given.</li>
+<li>Word: <em>fiende</em>. Translation: <em>finden</em> (incorrect).</li>
+<li>Word: <em>söka</em>. Translation: <em>suchen</em> (correct).</li>
+<li>Word: <em>försiktig</em>. Translation: <em>vorsichtig</em> (correct).</li>
+</ul></li>
+<li>Participant 5901. Man, 15 years.
+<ul>
+<li>Word: <em>behärska</em>. Translation: <em>beherrschen</em> (correct).</li>
+<li>Word: <em>mjölk</em>. Translation: <em>milch</em> (sic.; correct).</li>
+<li>Word: <em>försiktig</em>. Translation: <em>vorsichtig</em> (correct).</li>
+<li>Word: <em>fiende</em>. Translation: <em>feinde</em> (sic.; correct; actually <em>Feind</em>).</li>
+<li>Word: <em>söka</em>. Translation: <em>socken</em> (sic.; incorrect).</li>
+</ul></li>
+</ul>
+<p>There are lots of ways in which we could represent these data in a spreadsheet. Let’s look at a few rules of thumb.</p>
+<section id="long-datasets-tend-to-be-more-practical-than-wide-ones" class="level3">
+<h3 class="anchored" data-anchor-id="long-datasets-tend-to-be-more-practical-than-wide-ones">Long datasets tend to be more practical than wide ones</h3>
+<p>We’ll concern ourselves strictly with <strong>rectangular</strong> datasets. These are datasets in which the information is laid out in rows and columns and in which all columns have the same length, and all rows have the same width. Examples of non-rectangular data formats are JSON and XML – see <a href="https://json.org/example.html">here</a>.</p>
+<p>Broadly speaking, we can organise our data in a <strong>wide</strong> format or in a <strong>long</strong> format. In a wide format, all pieces of information related to a unit of data collection are organised in a single row. For instance, we could think of each participant in the study as a unit of data collection, in which case we could lay out the data as in <a href="#fig-wide-subject">Figure&nbsp;1</a>. Note that the spreadsheet contains a column for each word that indicates the position in which it was presented to the participants. Alternatively, we could think of each word as a unit of data collection and organise the data like in <a href="#fig-wide-item">Figure&nbsp;2</a>.</p>
+<div id="fig-wide-subject" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/wide_data_subject.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;1: A wide dataset with one row per participant.</figcaption>
+</figure>
+</div>
+<div id="fig-wide-item" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/wide_data_item.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;2: A wide dataset with one row per word.</figcaption>
+</figure>
+</div>
+<p>In a long format, all pieces of information pertaining to an observational unit are organised in a single row. It’s difficult to precisely define what units of data collection and observational units are, and it wouldn’t be too useful to have a precise definition, anyway. But in the present example, the observational units would be the individual responses, i.e., the individual translations. <a href="#fig-long-data">Figure&nbsp;3</a> shows how the same data look like when organised in a long format.</p>
+<div id="fig-long-data" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/long_data.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;3: A long dataset with one row per word per participant. Long datasets tend to be easier to manage and to analyse than wide ones.</figcaption>
+</figure>
+</div>
+<p>It’s usually easier to work with data in a long-ish format compared to with data in a wide-ish format. Moreover, when you do need your data in a wide-ish format for data analysis, converting a longer dataset to a wider one is typically easier than vice versa.</p>
+<p>Make sure that all rows can be interpreted independently of one another. What we want to avoid is that we can’t make sense of the data in some row because we need data from another row to do so, and this other row was deleted, or the order of the rows has changed, etc. For instance, in <a href="#fig-long-data">Figure&nbsp;3</a>, we also have a column with the <code>Position</code>s, even though we could have derived this information from the ordering of the rows. But once a row gets deleted or once the order of the rows gets permuted, we’d lose this piece of information. So don’t organise the data like in <a href="#fig-long-data-nicht-so">Figure&nbsp;4</a>.</p>
+<div id="fig-long-data-nicht-so" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/long_data_nicht_so.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;4: Not like this! In this dataset, several cells are left empty as their contents can be derived from other cells. But this will result in difficulties when analysing the data. Moreover, deleting some rows or changing their order would make it impossible to reconstruct the intended contents of these empty cells.</figcaption>
+</figure>
+</div>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Datasets are different from tables
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><a href="#fig-long-data-nicht-so">Figure&nbsp;4</a> employs a trick often used when presenting data in a table: leave out information that didn’t change compared to the last row. But the goal of a table is to <em>communicate</em> data or patterns in data, not to organise the data so that they can be analysed.</p>
+</div>
+</div>
+<p>Furthermore, the dataset needs to be rectangular. <a href="#fig-long-data-schlecht">Figure&nbsp;5</a> shows what <em>not</em> to do: The additional rows reporting some averages don’t fit in with the rest of the dataset (“Prozent Männer:” is not the ID of a <code>Versuchsperson</code>, and “30” is not a <code>Geschlecht</code>.)</p>
+<div id="fig-long-data-schlecht" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/datensatz_schlecht.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;5: Not like this! This dataset is not rectangular.</figcaption>
+</figure>
+</div>
+</section>
+<section id="use-short-but-descriptive-variable-names" class="level3">
+<h3 class="anchored" data-anchor-id="use-short-but-descriptive-variable-names">Use short but descriptive variable names</h3>
+<p>Make your life during the data analysis easier by using short but descriptive labels for variables or values in the spreadsheet. By doing so, you avoid that you constantly need to look up in the project’s codebook what the labels mean, thereby reducing the likelihood that you’ll make errors. Moreover, you save yourself some typing.</p>
+<p>A few examples:</p>
+<ul>
+<li>When working with questionnaire data, don’t simply label the columns with the number of the question in the questionnaire (e.g., <code>Q3</code> or <code>Question17</code>). Instead, use more descriptive labels such as <code>DegreeFather</code> oder <code>DialectUse</code>.</li>
+<li>If you have a column labelled <code>Sex</code> that is filled with 1s and 0s, then you may end up having to look up if the 1s refer to men or to women. Instead, either fill the column with <code>m(an)</code> and <code>w(oman)</code> values, or rename the column <code>Man</code>, so that you know that the 1s refer to men.</li>
+<li>Try to strike a balance between descriptive power and length. For instance, a variable named <code>HowOftenDoYouSpeakStandardGerman</code> will get on your nerves before long; <code>SpeakStandard</code> could be sufficient.</li>
+</ul>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Use a codebook
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Having short and descriptive variable names is not an excuse for not maintaining a codebook that spells out precisely what each variable in the dataset refers to. [<a href="https://osf.io/d9gnh">Example of a codebook</a>].</p>
+</div>
+</div>
+</section>
+<section id="label-missing-values-unambiguously" class="level3">
+<h3 class="anchored" data-anchor-id="label-missing-values-unambiguously">Label missing values unambiguously</h3>
+<p>In <a href="#fig-long-data">Figure&nbsp;3</a>, I left some of the translation cells empty. From this, I can deduce that the word was presented to the participant but that he or she did not translate the word. However, it could have been possible that some participants were inadvertently never shown a particular word (e.g., due to a programming error) or that some of the participants’ were irretrievably lost. We should enable ourselves to distinguish between these cases, for instance by marking the latter cases using <code>NA</code> (<em>not available</em>).</p>
+<p>If you want to be able to tell apart different reasons for missing data (such as data loss, programming errors, participants’ refusal to answer a certain question, participants’ being absent from a data collection etc.), it’s probably easiest to just write <code>NA</code> in the column and add another column with comments detailing the reasons for the missingness.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Don’t use numbers to encode missingness
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Some data logging applications use -99 or -9999 to encode missingness. The problem with this is that, sometimes, -99 or -9999 don’t immediately stand out as conspicuous values.</p>
+</div>
+</div>
+</section>
+<section id="reduce-redundancy-by-splitting-up-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="reduce-redundancy-by-splitting-up-datasets">Reduce redundancy by splitting up datasets</h3>
+<p>The spreadsheet above contain several repeated pieces of information. For instance, for all five translations provided by participant 1034, we indicated that they were provided by a woman aged 51. We can eliminate this source of redundancy by managing a handful of smaller datasets rather than just a single large one. More specifically, we can manage a dataset that contains all information that depends <em>just</em> on the participants, see <a href="#fig-participants">Figure&nbsp;6</a>. Each participant has a unique ID (here: <code>Versuchsperson</code>), and the dataset contains contains a single row for each participant. If we need to correct an entry related to, say, some participant’s age, we just need to change it here – once – rather than five times in the larger dataset.</p>
+<div id="fig-participants" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/versuchspersonen.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;6: The first smaller dataset only contains information concerning the participants.</figcaption>
+</figure>
+</div>
+<p>By the same token, we can put all information that depends <em>just</em> on the stimuli used in a separate dataset, see <a href="#fig-words">Figure&nbsp;7</a>. Here, too, each stimulus has a unique ID (here: <code>Wort</code>).</p>
+<div id="fig-words" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/woerter.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;7: The second smaller dataset only contains information concerning the words.</figcaption>
+</figure>
+</div>
+<p>The third dataset then only contains information that depends on the <em>combination</em> of a particular participant and a particular word. As shown in <a href="#fig-translations">Figure&nbsp;8</a>, each row in this dataset contains the IDs of both the participant and the stimulus that the response is related to. But any other information related to just the word or to just the participant is left out of this dataset. As we’ll see shortly, we can easily add the information related to the participants or to the words to this dataset from the other two datasets.</p>
+<div id="fig-translations" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/uebersetzungen.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;8: The third dataset only contains the translations.</figcaption>
+</figure>
+</div>
+</section>
+<section id="miscellaneous-tips" class="level3">
+<h3 class="anchored" data-anchor-id="miscellaneous-tips">Miscellaneous tips</h3>
+<ul>
+<li>Mind capitalisation. For some programs and computer languages, <code>Frau</code> and <code>frau</code> are the same value; for others (including R), they are not.</li>
+<li>Mind trailing spaces. <code>Mann</code> (with trailing space) and <code>Mann</code> (without trailing space) are different values to a computer.</li>
+<li>Special symbols, including the Umlaut, sometimes lead to problems, especially when collaborating with people whose localisation settings differ from yours.</li>
+<li>Format dates in the YYYY/MM/DD format. This way, if you alphabetically sort the data, they’re already in chronological order.</li>
+<li>Don’t use colour-coding in your spreadsheet. Or if you do use it, be aware that you’ll lose this information once you import your data into your statistics program.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Work as little as possible in the spreadsheet
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>After you’ve entered your data into a spreadsheet, all further steps in your analysis should be carried out in R (or Python, or Julia, or what-have-you). Don’t calculate, sort, copy, paste, move, reshape, draw graphs etc. in Excel or whatever spreadsheet program you prefer. Treat your finished spreadsheet as the immutable source of data from which your results will be obtained, so that when in doubt, it’s clear which file you should go back to.</p>
+<p>When using R (or Python, or Julia, or whatever), use (a) script(s) to read in the original dataset and convert the data in it to a format more amenable to analysis, but do not overwrite the original file.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Use data validation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>When working in a spreadsheet program, you can use the data validation functions to minimise the chances that you enter faulty data. For instance, if you know that the possible responses to a certain questions are either integers from 0 to 5 or <code>NA</code>, make a data validation rule that prevents you from entering erroneous data.</p>
+<p>Also see the blog post <a href="https://janhove.github.io/posts/2018-07-06-data-entry-failsafes/"><em>A data entry form with failsafes</em></a>.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="reading-in-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="reading-in-datasets">Reading in datasets</h2>
+<p>With the data available in a rectangular spreadsheet format, the next challenge is to load them into a program capable of analysing them. Several (free) options are available (<a href="https://jasp-stats.org/">JASP</a>, <a href="https://wesmckinney.com/book/">Python</a>, <a href="https://julialang.org/">Julia</a>, …), but we’ll focus on R complemented with the <code>tidyverse</code> suite. The main reasons for this are that R is more popular in the humanities and the social sciences and that I’m just more proficient in R. Hadley Wickham lists some <a href="https://adv-r.hadley.nz/introduction.html#why-r">further reasons</a>.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R, RStudio, and the tidyverse
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>To install R, visit the <a href="https://www.r-project.org">R Project website</a>.</p>
+<p>In addition, I recommend you install RStudio, which facilitates working with R. To do so, visit the <a href="https://posit.co">Posit website</a> and download the open source desktop version of RStudio.</p>
+<p>Once you’ve installed R and RStudio, open RStudio, and go to <code>Tools &gt; Global options...</code>. In the tab <code>General, Basic</code>, make sure to <em>untick</em> the option ‘Restore .RData into workspace at startup’ and select the option ‘never’ for ‘Save workspace to .RData on exit’. These settings help ensure that you’re starting from a clean slate each time you open RStudio and prevent the results of calculations in previous sessions from messing up your analyses. Additionally, in the tab <code>Code, Editing</code>, tick the box next to ‘Use native pipe operator, |&gt;’. We’ll encounter this pipe operator shortly. Finally, I recommend setting the default text encoding to UTF-8 (<code>Code, Saving</code>).</p>
+<p>The functionality of R can be extended by installing further packages. We’ll be using two of these. The first is the <code>here</code> package, which makes it easier to read in data files if you’re working in a complex file system. Nothing in what follows hinges on your using the <code>here</code> package or not; I just find that it makes my life easier. To install the <code>here</code> package, type the following command at the R prompt:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"here"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The second package isn’t optional if you want to following along with the rest of this course: The <code>tidyverse</code> actually bundles a couple of package that are based on a set of shared principles and that facilitate working with datasets enormously. You can install it like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"tidyverse"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+R projects
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'here' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at C:/Users/VanhoveJ/switchdrive/Documents/Workshops/DatasetsAndGraphs</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package 'tidyverse' was built under R version 4.3.3</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.2     ✔ readr     2.1.4
+✔ forcats   1.0.0     ✔ stringr   1.5.0
+✔ ggplot2   3.4.2     ✔ tibble    3.2.1
+✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+✔ purrr     1.0.1     </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+</div>
+<p>Incidentally, you don’t need to install these packages every time you need them, but you do need to load them every time you need them in a new session. I recommend including the packages you need at the top of your script.</p>
+</div>
+</div>
+<section id="excel-files" class="level3">
+<h3 class="anchored" data-anchor-id="excel-files">Excel files</h3>
+<p>We’ll focus on reading in two kinds of spreadsheets: Excel spreadsheets in the XLS(X) format, and CSV files.</p>
+<p>In order to read in XLS(X) files, we need the <code>readxl</code> package. This package is part of the <code>tidyverse</code> suite, but it does not get loaded automatically as you load the <code>tidyverse</code> suite. So we load it separately:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Assuming the file <code>uebersetzungen.xlsx</code> is located in the <code>data</code> subdirectory of your R project directory, we can read it into R as follows.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>translations <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"uebersetzungen.xlsx"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The dataset is now loaded as a so-called <em>tibble</em> named <code>translations</code>. We can display it by simply typing its name at the prompt:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>translations</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 5
+   Versuchsperson Position Wort      Übersetzung Richtig
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+ 1           1034        1 söka      Socken            0
+ 2           1034        2 försiktig vorsichtig        1
+ 3           1034        3 mjölk     Milch             1
+ 4           1034        4 behärska  &lt;NA&gt;              0
+ 5           1034        5 fiende    finden            0
+ 6           2384        1 fiende    &lt;NA&gt;              0
+ 7           2384        2 behärska  &lt;NA&gt;              0
+ 8           2384        3 försiktig vorsichtig        1
+ 9           2384        4 mjölk     Milch             1
+10           2384        5 söka      Socke             0
+11           8667        1 mjölk     Milch             1
+12           8667        2 behärska  &lt;NA&gt;              0
+13           8667        3 fiende    finden            0
+14           8667        4 söka      suchen            1
+15           8667        5 försiktig vorsichtig        1
+16           5901        1 behärska  beherrschen       1
+17           5901        2 mjölk     milch             1
+18           5901        3 försiktig vorsichtig        1
+19           5901        4 fiende    feinde            1
+20           5901        5 söka      socken            0</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Data frames and tibbles
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Rectangular data sets are referred to as <em>data frames</em> in R. The <code>tidyverse</code> slightly changes their functionality, mostly in order to allow for prettier displaying, and refers to them as <em>tibbles</em>.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Empty strings interpreted as missing
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that the empty cells are automatically interpreted as missing data (<code>&lt;NA&gt;</code>). The documentation of the <code>read_excel</code> function, which you can access by typing <code>?read_excel</code> at the R prompt, suggests that we can override this behaviour, but <a href="https://github.com/tidyverse/readxl/issues/572">we can’t</a>.</p>
+</div>
+</div>
+<p>If, instead of printing the entire tibble at the prompt, we just want to display the first few rows, we can use <code>slide_head</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_head</span>(translations, <span class="at">n =</span> <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 5
+  Versuchsperson Position Wort      Übersetzung Richtig
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+1           1034        1 söka      Socken            0
+2           1034        2 försiktig vorsichtig        1
+3           1034        3 mjölk     Milch             1
+4           1034        4 behärska  &lt;NA&gt;              0</code></pre>
+</div>
+</div>
+<p><code>slice_tail</code> works similarly. If you want to display a random selection of rows, you can use <code>slice_sample</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_sample</span>(translations, <span class="at">n =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 5
+  Versuchsperson Position Wort      Übersetzung Richtig
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+1           5901        2 mjölk     milch             1
+2           2384        2 behärska  &lt;NA&gt;              0
+3           1034        2 försiktig vorsichtig        1
+4           1034        4 behärska  &lt;NA&gt;              0
+5           5901        3 försiktig vorsichtig        1</code></pre>
+</div>
+</div>
+<p>Again, for details, you can check the documentation of these functions that is available at <code>?slice_head</code>.</p>
+</section>
+<section id="csv-files" class="level3">
+<h3 class="anchored" data-anchor-id="csv-files">CSV files</h3>
+<p>A popular format for storing spreadsheets is the CSV format. CSV is short for <em>comma-separated values</em>: Cells on the same row are separated by commas, see <a href="#fig-csv">Figure&nbsp;9</a>. Sometimes, text strings are additionally surrounded by quotation marks.</p>
+<div id="fig-csv" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="figs/csv.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;9: A spreadsheet stored as <em>comma-separated values</em>.</figcaption>
+</figure>
+</div>
+<p>To read in CSV files, we can use the <code>read_csv</code> function, which is part of the <code>readr</code> package, which in turn is automatically loaded when the <code>tidyverse</code> suit is loaded:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>translations <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"uebersetzungen.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 20 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Wort, Übersetzung
+dbl (3): Versuchsperson, Position, Richtig
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>translations</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 5
+   Versuchsperson Position Wort      Übersetzung Richtig
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;         &lt;dbl&gt;
+ 1           1034        1 söka      Socken            0
+ 2           1034        2 försiktig vorsichtig        1
+ 3           1034        3 mjölk     Milch             1
+ 4           1034        4 behärska  &lt;NA&gt;              0
+ 5           1034        5 fiende    finden            0
+ 6           2384        1 fiende    &lt;NA&gt;              0
+ 7           2384        2 behärska  &lt;NA&gt;              0
+ 8           2384        3 försiktig vorsichtig        1
+ 9           2384        4 mjölk     Milch             1
+10           2384        5 söka      Socke             0
+11           8667        1 mjölk     Milch             1
+12           8667        2 behärska  &lt;NA&gt;              0
+13           8667        3 fiende    finden            0
+14           8667        4 söka      suchen            1
+15           8667        5 försiktig vorsichtig        1
+16           5901        1 behärska  beherrschen       1
+17           5901        2 mjölk     milch             1
+18           5901        3 försiktig vorsichtig        1
+19           5901        4 fiende    feinde            1
+20           5901        5 söka      socken            0</code></pre>
+</div>
+</div>
+<p>We receive a couple of messages (no errors!). These show that the <code>read_csv</code> function correctly recognised that the columns <code>Wort</code> and <code>Übersetzung</code> contain text (‘chr’, character) strings, whereas <code>Versuchsperson</code>, <code>Position</code> and <code>Richtig</code> contain numbers (‘dbl’ for ‘double’, a number format).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Empty strings interpreted as missing
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With <code>read_csv</code>, we can specify that only cells containing “NA” are marked as missing data:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>translations2 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"uebersetzungen.csv"</span>), <span class="at">na =</span> <span class="st">"NA"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 20 Columns: 5
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Wort, Übersetzung
+dbl (3): Versuchsperson, Position, Richtig
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>translations2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 5
+   Versuchsperson Position Wort      Übersetzung   Richtig
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;     &lt;chr&gt;           &lt;dbl&gt;
+ 1           1034        1 söka      "Socken"            0
+ 2           1034        2 försiktig "vorsichtig"        1
+ 3           1034        3 mjölk     "Milch"             1
+ 4           1034        4 behärska  ""                  0
+ 5           1034        5 fiende    "finden"            0
+ 6           2384        1 fiende    ""                  0
+ 7           2384        2 behärska  ""                  0
+ 8           2384        3 försiktig "vorsichtig"        1
+ 9           2384        4 mjölk     "Milch"             1
+10           2384        5 söka      "Socke"             0
+11           8667        1 mjölk     "Milch"             1
+12           8667        2 behärska  ""                  0
+13           8667        3 fiende    "finden"            0
+14           8667        4 söka      "suchen"            1
+15           8667        5 försiktig "vorsichtig"        1
+16           5901        1 behärska  "beherrschen"       1
+17           5901        2 mjölk     "milch"             1
+18           5901        3 försiktig "vorsichtig"        1
+19           5901        4 fiende    "feinde"            1
+20           5901        5 söka      "socken"            0</code></pre>
+</div>
+</div>
+</div>
+</div>
+<p>Let’s also read in the datasets containing the information pertaining to the participants and items:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>participants <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"versuchspersonen.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 4 Columns: 4
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Geschlecht, Englisch
+dbl (2): Versuchsperson, Alter
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>items <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"woerter.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 5 Columns: 2
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Wort, RichtigeÜbersetzung
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Different CSV formats
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you save an Excel spreadsheet as a CSV file on a French- or German-language computer system, the cells will be separated using semicolons rather than using commas. The reason is that commas are used as decimal separators in French and German. To read in ‘CSV’ files that use semicolons as cell separators, you can use the <code>read_csv2</code> function.</p>
+<p>Incidentally, if you use LibreOffice.org Calc instead of Excel, you can choose which cell separator gets used if you export a spreadsheet as a CSV file.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<code>read_csv</code> vs.&nbsp;<code>read.csv</code>
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>More seasoned R users are probably already familiar with the <code>read.csv</code> function (with a dot rather than an underscore). The <code>read_csv</code> function is merely the <code>tidyverse</code> counterpart to this function. The practical differences between them are negligible.</p>
+</div>
+</div>
+</section>
+<section id="other-formats" class="level3">
+<h3 class="anchored" data-anchor-id="other-formats">Other formats</h3>
+<p>For reading in data from Google Sheets, see <a href="https://googlesheets4.tidyverse.org/">googlesheets4</a>.</p>
+<p>For interacting with Google Drive, see <a href="https://googledrive.tidyverse.org/">googledrive</a>.</p>
+<p>For reading in SPSS, Stata and SAS files, see <a href="https://haven.tidyverse.org/">haven</a>.</p>
+</section>
+</section>
+<section id="joining-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="joining-datasets">Joining datasets</h2>
+<p>Having read in our three datasets as <code>translations</code>, <code>participants</code>, and <code>items</code>, we want to merge these datasets into one large dataset. The most useful function for this is <code>left_join</code>, which takes the dataset passed as its <code>x</code> argument and adds to this the corresponding rows from the <code>y</code> dataset:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="at">x =</span> translations, <span class="at">y =</span> participants)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Versuchsperson)`</code></pre>
+</div>
+</div>
+<p>Note that the <code>left_join</code> function recognises that the variable shared between both datasets is called <code>Versuchsperson</code>. Hence, the information related to participant 1034 contained in <code>participants</code> is added to each row in <code>translations</code> where the <code>Versuchsperson</code> value is 1034, and similarly for the other participants:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>all_data</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 8
+   Versuchsperson Position Wort    Übersetzung Richtig Geschlecht Alter Englisch
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+ 1           1034        1 söka    Socken            0 Frau          51 B2      
+ 2           1034        2 försik… vorsichtig        1 Frau          51 B2      
+ 3           1034        3 mjölk   Milch             1 Frau          51 B2      
+ 4           1034        4 behärs… &lt;NA&gt;              0 Frau          51 B2      
+ 5           1034        5 fiende  finden            0 Frau          51 B2      
+ 6           2384        1 fiende  &lt;NA&gt;              0 Frau          27 C1      
+ 7           2384        2 behärs… &lt;NA&gt;              0 Frau          27 C1      
+ 8           2384        3 försik… vorsichtig        1 Frau          27 C1      
+ 9           2384        4 mjölk   Milch             1 Frau          27 C1      
+10           2384        5 söka    Socke             0 Frau          27 C1      
+11           8667        1 mjölk   Milch             1 Frau          27 B2      
+12           8667        2 behärs… &lt;NA&gt;              0 Frau          27 B2      
+13           8667        3 fiende  finden            0 Frau          27 B2      
+14           8667        4 söka    suchen            1 Frau          27 B2      
+15           8667        5 försik… vorsichtig        1 Frau          27 B2      
+16           5901        1 behärs… beherrschen       1 Mann          15 B1      
+17           5901        2 mjölk   milch             1 Mann          15 B1      
+18           5901        3 försik… vorsichtig        1 Mann          15 B1      
+19           5901        4 fiende  feinde            1 Mann          15 B1      
+20           5901        5 söka    socken            0 Mann          15 B1      </code></pre>
+</div>
+</div>
+<p>If you don’t want the <code>left_join</code> function to figure out what the shared variable is, you can specify it explicitly:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="at">x =</span> translations, <span class="at">y =</span> participants, <span class="at">by =</span> <span class="st">"Versuchsperson"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>If the shared variable has different names in the different datasets, you can use something like</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>new <span class="ot">&lt;-</span> <span class="fu">left_join</span>(<span class="at">x =</span> left_dataset, <span class="at">y =</span> right_dataset, <span class="at">by =</span> <span class="fu">join_by</span>(var_left <span class="sc">==</span> var_right))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>See <code>?join_by</code> for more information.</p>
+<p>If there are values in the shared variable that occur in the <code>x</code> dataset that don’t occur in the <code>y</code> dataset, the values in the added columns will read <code>NA</code> for these rows.</p>
+<p>Further join functions are the following, see <code>?join</code> for details:</p>
+<ul>
+<li><code>right_join</code>: All entries in <code>y</code> are kept. Corresponding entries in <code>x</code> are added.</li>
+<li><code>full_join</code>: All entries both datasets are kept. <code>NA</code>s are added if there is no corresponding entry in the other dataset.</li>
+<li><code>inner_join</code>: Only keep entries in <code>x</code> for which there is a corresponding entry in <code>y</code>. Add these corresponding entries.</li>
+<li><code>semi_join</code>: Only keep entries in <code>x</code> for which there is a corresponding entry in <code>y</code>. Don’t add these corresponding entries.</li>
+<li><code>anti_join</code>: Only keep entries in <code>x</code> for which there are <em>no</em> corresponding entries in <code>y</code>.</li>
+</ul>
+<p>In the current example, <code>left_join</code>, <code>full_join</code> and <code>inner_join</code> would all yield the same result. But this isn’t always the case.</p>
+<p>Let’s also add the information pertaining to the words:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> <span class="fu">left_join</span>(all_data, items)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Wort)`</code></pre>
+</div>
+</div>
+<p>Incidentally, another way of achieving the same result is this:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="ot">&lt;-</span> translations <span class="sc">|&gt;</span> </span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(participants) <span class="sc">|&gt;</span> </span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(items)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Versuchsperson)`
+Joining with `by = join_by(Wort)`</code></pre>
+</div>
+</div>
+<section id="exercise-join-functions" class="level3">
+<h3 class="anchored" data-anchor-id="exercise-join-functions">Exercise: join functions</h3>
+<ol type="1">
+<li>Use the following code to generate two tibbles called <code>left</code> and <code>right</code>:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>left <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">A =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>, <span class="st">"c"</span>, <span class="cn">NA</span>),</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">B =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="cn">NA</span>, <span class="dv">4</span>))</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>right <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">B =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">4</span>),</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">C =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="cn">NA</span>, <span class="dv">12</span>, <span class="dv">7</span>))</span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>left</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+  A         B
+  &lt;chr&gt; &lt;dbl&gt;
+1 a         1
+2 b         2
+3 c        NA
+4 &lt;NA&gt;      4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>right</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 2
+      B     C
+  &lt;dbl&gt; &lt;dbl&gt;
+1     1    10
+2     3    NA
+3     4    12
+4     4     7</code></pre>
+</div>
+</div>
+<ol start="2" type="1">
+<li><em>Without running these commands</em>, predict what their output would look like:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a><span class="fu">right_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a><span class="fu">full_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="fu">inner_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a><span class="fu">semi_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="fu">semi_join</span>(<span class="at">x =</span> recht, <span class="at">y =</span> left) <span class="co"># !</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(<span class="at">x =</span> left, <span class="at">y =</span> right)</span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="fu">anti_join</span>(<span class="at">x =</span> right, <span class="at">y =</span> left) <span class="co"># !</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="3" type="1">
+<li><p>Now run the commands above to verify your predictions.</p></li>
+<li><p>Create two new tibbles using the code below:</p></li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>left <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">A =</span> <span class="fu">c</span>(<span class="st">"a"</span>, <span class="st">"b"</span>),</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">B =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="cn">NA</span>))</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>right <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">B =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="cn">NA</span>, <span class="cn">NA</span>),</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                <span class="at">C =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>left</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  A         B
+  &lt;chr&gt; &lt;dbl&gt;
+1 a         1
+2 b        NA</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>right</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 2
+      B     C
+  &lt;dbl&gt; &lt;dbl&gt;
+1     1     0
+2    NA     1
+3    NA     2</code></pre>
+</div>
+</div>
+<ol start="5" type="1">
+<li>Consult the help page for <code>left_join</code> and look up the <code>na_matches</code> parameter under ‘Arguments’. Predict what the output of the following two commands would look like, and only then check your answer.</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(left, right)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(B)`</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  A         B     C
+  &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 a         1     0
+2 b        NA     1
+3 b        NA     2</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">left_join</span>(left, right, <span class="at">na_matches =</span> <span class="st">"never"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(B)`</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  A         B     C
+  &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 a         1     0
+2 b        NA    NA</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="queries" class="level2">
+<h2 class="anchored" data-anchor-id="queries">Queries</h2>
+<section id="selecting-by-row-number" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-by-row-number">Selecting by row number</h3>
+<p>We can select the third row of a dataset like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="fu">slice</span>(all_data, <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 9
+  Versuchsperson Position Wort  Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        3 mjölk Milch             1 Frau          51 B2      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Alternatively, we can write this command as follows. The symbols <code>|&gt;</code> allow us to take an object (here: <code>all_data</code>) and pass it to a function as its first argument. As we’ll later see, we can use <code>|&gt;</code> to string together a host of function calls without creating illegible code.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 9
+  Versuchsperson Position Wort  Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        3 mjölk Milch             1 Frau          51 B2      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>We can also select multiple rows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rows 5 and 7</span></span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">7</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        5 fiende   finden            0 Frau          51 B2      
+2           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rows 5 to (and including) 7</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">5</span><span class="sc">:</span><span class="dv">7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        5 fiende   finden            0 Frau          51 B2      
+2           2384        1 fiende   &lt;NA&gt;              0 Frau          27 C1      
+3           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>The results of such actions can be stored as separate objects, for instance, like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>rows7_12 <span class="ot">&lt;-</span> all_data <span class="sc">|&gt;</span> </span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">7</span><span class="sc">:</span><span class="dv">12</span>)</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>rows7_12</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+2           2384        3 försikt… vorsichtig        1 Frau          27 C1      
+3           2384        4 mjölk    Milch             1 Frau          27 C1      
+4           2384        5 söka     Socke             0 Frau          27 C1      
+5           8667        1 mjölk    Milch             1 Frau          27 B2      
+6           8667        2 behärska &lt;NA&gt;              0 Frau          27 B2      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>We can export this new object as a CSV file like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(rows7_12, <span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"rows7_12.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="selecting-by-values" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-by-values">Selecting by values</h3>
+<p>Selecting rows by their number isn’t too useful. But selecting rows satisfying some set of conditions is very useful. Here are a few examples:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All data corresponding to the word 'fiende'</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Wort <span class="sc">==</span> <span class="st">"fiende"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 9
+  Versuchsperson Position Wort   Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        5 fiende finden            0 Frau          51 B2      
+2           2384        1 fiende &lt;NA&gt;              0 Frau          27 C1      
+3           8667        3 fiende finden            0 Frau          27 B2      
+4           5901        4 fiende feinde            1 Mann          15 B1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: use '!=' for 'not equal to'.</span></span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a><span class="co"># All data corresponding to participants older than 30</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Alter <span class="sc">&gt;</span> <span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        1 söka     Socken            0 Frau          51 B2      
+2           1034        2 försikt… vorsichtig        1 Frau          51 B2      
+3           1034        3 mjölk    Milch             1 Frau          51 B2      
+4           1034        4 behärska &lt;NA&gt;              0 Frau          51 B2      
+5           1034        5 fiende   finden            0 Frau          51 B2      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: use '&gt;=' for 'at least as old as', </span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="co">#           '&lt;=' for 'no older than', </span></span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a><span class="co">#        and '&lt;' for 'younger than'.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We can use <code>is.na</code> to check for missing values. Note the use of <code>!</code> to negate a condition.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">is.na</span>(Übersetzung))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        4 behärska &lt;NA&gt;              0 Frau          51 B2      
+2           2384        1 fiende   &lt;NA&gt;              0 Frau          27 C1      
+3           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+4           8667        2 behärska &lt;NA&gt;              0 Frau          27 B2      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Übersetzung))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 16 × 9
+   Versuchsperson Position Wort    Übersetzung Richtig Geschlecht Alter Englisch
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+ 1           1034        1 söka    Socken            0 Frau          51 B2      
+ 2           1034        2 försik… vorsichtig        1 Frau          51 B2      
+ 3           1034        3 mjölk   Milch             1 Frau          51 B2      
+ 4           1034        5 fiende  finden            0 Frau          51 B2      
+ 5           2384        3 försik… vorsichtig        1 Frau          27 C1      
+ 6           2384        4 mjölk   Milch             1 Frau          27 C1      
+ 7           2384        5 söka    Socke             0 Frau          27 C1      
+ 8           8667        1 mjölk   Milch             1 Frau          27 B2      
+ 9           8667        3 fiende  finden            0 Frau          27 B2      
+10           8667        4 söka    suchen            1 Frau          27 B2      
+11           8667        5 försik… vorsichtig        1 Frau          27 B2      
+12           5901        1 behärs… beherrschen       1 Mann          15 B1      
+13           5901        2 mjölk   milch             1 Mann          15 B1      
+14           5901        3 försik… vorsichtig        1 Mann          15 B1      
+15           5901        4 fiende  feinde            1 Mann          15 B1      
+16           5901        5 söka    socken            0 Mann          15 B1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>We can string together multiple <code>filter</code> calls:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="co"># incorrect translations to first word</span></span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Richtig <span class="sc">==</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 9
+  Versuchsperson Position Wort   Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        1 söka   Socken            0 Frau          51 B2      
+2           2384        1 fiende &lt;NA&gt;              0 Frau          27 C1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>An alternative way of writing this is as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> Richtig <span class="sc">==</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 9
+  Versuchsperson Position Wort   Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        1 söka   Socken            0 Frau          51 B2      
+2           2384        1 fiende &lt;NA&gt;              0 Frau          27 C1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>‘or’ conditions can be created using <code>|</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="co"># translations to first word or incorrect translations</span></span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span> Richtig <span class="sc">==</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 11 × 9
+   Versuchsperson Position Wort    Übersetzung Richtig Geschlecht Alter Englisch
+            &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+ 1           1034        1 söka    Socken            0 Frau          51 B2      
+ 2           1034        4 behärs… &lt;NA&gt;              0 Frau          51 B2      
+ 3           1034        5 fiende  finden            0 Frau          51 B2      
+ 4           2384        1 fiende  &lt;NA&gt;              0 Frau          27 C1      
+ 5           2384        2 behärs… &lt;NA&gt;              0 Frau          27 C1      
+ 6           2384        5 söka    Socke             0 Frau          27 C1      
+ 7           8667        1 mjölk   Milch             1 Frau          27 B2      
+ 8           8667        2 behärs… &lt;NA&gt;              0 Frau          27 B2      
+ 9           8667        3 fiende  finden            0 Frau          27 B2      
+10           5901        1 behärs… beherrschen       1 Mann          15 B1      
+11           5901        5 söka    socken            0 Mann          15 B1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Note that in logic, ‘or’ is always inclusive. Exclusive ‘or’ (‘xor’) can be obtained as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="co"># translations to first word or incorrect translations, but not both</span></span>
+<span id="cb81-2"><a href="#cb81-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb81-3"><a href="#cb81-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Position <span class="sc">==</span> <span class="dv">1</span> <span class="sc">|</span> Richtig <span class="sc">==</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb81-4"><a href="#cb81-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span>(Position <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> Richtig <span class="sc">==</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        4 behärska &lt;NA&gt;              0 Frau          51 B2      
+2           1034        5 fiende   finden            0 Frau          51 B2      
+3           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+4           2384        5 söka     Socke             0 Frau          27 C1      
+5           8667        1 mjölk    Milch             1 Frau          27 B2      
+6           8667        2 behärska &lt;NA&gt;              0 Frau          27 B2      
+7           8667        3 fiende   finden            0 Frau          27 B2      
+8           5901        1 behärska beherrschen       1 Mann          15 B1      
+9           5901        5 söka     socken            0 Mann          15 B1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<p>Alternatively,</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb83"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb83-1"><a href="#cb83-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb83-2"><a href="#cb83-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">xor</span>(Position <span class="sc">==</span> <span class="dv">1</span>, Richtig <span class="sc">==</span> <span class="dv">0</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 9
+  Versuchsperson Position Wort     Übersetzung Richtig Geschlecht Alter Englisch
+           &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;    &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;   
+1           1034        4 behärska &lt;NA&gt;              0 Frau          51 B2      
+2           1034        5 fiende   finden            0 Frau          51 B2      
+3           2384        2 behärska &lt;NA&gt;              0 Frau          27 C1      
+4           2384        5 söka     Socke             0 Frau          27 C1      
+5           8667        1 mjölk    Milch             1 Frau          27 B2      
+6           8667        2 behärska &lt;NA&gt;              0 Frau          27 B2      
+7           8667        3 fiende   finden            0 Frau          27 B2      
+8           5901        1 behärska beherrschen       1 Mann          15 B1      
+9           5901        5 söka     socken            0 Mann          15 B1      
+# ℹ 1 more variable: RichtigeÜbersetzung &lt;chr&gt;</code></pre>
+</div>
+</div>
+<section id="exercise" class="level4">
+<h4 class="anchored" data-anchor-id="exercise">Exercise</h4>
+<ol type="1">
+<li>Run the following commands:</li>
+</ol>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> all_data <span class="sc">|&gt;</span> </span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Übersetzung <span class="sc">==</span> <span class="st">"vorsichtig"</span>)</span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a>d2 <span class="ot">&lt;-</span> all_data <span class="sc">|&gt;</span> </span>
+<span id="cb85-4"><a href="#cb85-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Übersetzung <span class="sc">!=</span> <span class="st">"vorsichtig"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<ol start="2" type="1">
+<li><p>Explain what both commands achieve.</p></li>
+<li><p>How many rows are there in <code>d1</code>? How many in <code>d2</code>? How many in <code>all_data</code>? Explain.</p></li>
+<li><p>Create a tibble <code>d3</code> that contains only those rows in <code>all_data</code> where the participants did not translate the word as <em>vorsichtig</em>.</p></li>
+</ol>
+</section>
+</section>
+<section id="selecting-columns" class="level3">
+<h3 class="anchored" data-anchor-id="selecting-columns">Selecting columns</h3>
+<p>Sometimes, a dataset is too cumbersome to handle because it contains a lot of irrelevant columns. Using <code>select</code>, we can select those columns that are of interest. For instance,</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb86"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb86-2"><a href="#cb86-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Wort, RichtigeÜbersetzung, Übersetzung) <span class="sc">|&gt;</span> </span>
+<span id="cb86-3"><a href="#cb86-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 3
+  Wort      RichtigeÜbersetzung Übersetzung
+  &lt;chr&gt;     &lt;chr&gt;               &lt;chr&gt;      
+1 söka      suchen              Socken     
+2 försiktig vorsichtig          vorsichtig 
+3 mjölk     milch               Milch      
+4 behärska  beherrschen         &lt;NA&gt;       
+5 fiende    Feind               finden     </code></pre>
+</div>
+</div>
+<p>There are a couple of auxiliary functions that make it easier to select columns. These are especially useful when working with large datasets. Examples are <code>contains()</code> and <code>starts_with()</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb88"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb88-1"><a href="#cb88-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb88-2"><a href="#cb88-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">contains</span>(<span class="st">"Übersetzung"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 2
+   Übersetzung RichtigeÜbersetzung
+   &lt;chr&gt;       &lt;chr&gt;              
+ 1 Socken      suchen             
+ 2 vorsichtig  vorsichtig         
+ 3 Milch       milch              
+ 4 &lt;NA&gt;        beherrschen        
+ 5 finden      Feind              
+ 6 &lt;NA&gt;        Feind              
+ 7 &lt;NA&gt;        beherrschen        
+ 8 vorsichtig  vorsichtig         
+ 9 Milch       milch              
+10 Socke       suchen             
+11 Milch       milch              
+12 &lt;NA&gt;        beherrschen        
+13 finden      Feind              
+14 suchen      suchen             
+15 vorsichtig  vorsichtig         
+16 beherrschen beherrschen        
+17 milch       milch              
+18 vorsichtig  vorsichtig         
+19 feinde      Feind              
+20 socken      suchen             </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb90-2"><a href="#cb90-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"Richt"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 2
+   Richtig RichtigeÜbersetzung
+     &lt;dbl&gt; &lt;chr&gt;              
+ 1       0 suchen             
+ 2       1 vorsichtig         
+ 3       1 milch              
+ 4       0 beherrschen        
+ 5       0 Feind              
+ 6       0 Feind              
+ 7       0 beherrschen        
+ 8       1 vorsichtig         
+ 9       1 milch              
+10       0 suchen             
+11       1 milch              
+12       0 beherrschen        
+13       0 Feind              
+14       1 suchen             
+15       1 vorsichtig         
+16       1 beherrschen        
+17       1 milch              
+18       1 vorsichtig         
+19       1 Feind              
+20       0 suchen             </code></pre>
+</div>
+</div>
+<p>See the <a href="https://tidyselect.r-lib.org/reference/language.html">tidyselect documentation</a> for further functions.</p>
+</section>
+<section id="further-examples" class="level3">
+<h3 class="anchored" data-anchor-id="further-examples">Further examples</h3>
+<p>We can string together different types of commands:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb92"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb92-1"><a href="#cb92-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All translations for 'fiende'</span></span>
+<span id="cb92-2"><a href="#cb92-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb92-3"><a href="#cb92-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Wort <span class="sc">==</span> <span class="st">"fiende"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb92-4"><a href="#cb92-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Übersetzung)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4 × 1
+  Übersetzung
+  &lt;chr&gt;      
+1 finden     
+2 &lt;NA&gt;       
+3 finden     
+4 feinde     </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb94"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb94-1"><a href="#cb94-1" aria-hidden="true" tabindex="-1"></a><span class="co"># All *distinct* translations for 'behärska':</span></span>
+<span id="cb94-2"><a href="#cb94-2" aria-hidden="true" tabindex="-1"></a>all_data <span class="sc">|&gt;</span> </span>
+<span id="cb94-3"><a href="#cb94-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Wort <span class="sc">==</span> <span class="st">"behärska"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb94-4"><a href="#cb94-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Übersetzung) <span class="sc">|&gt;</span> </span>
+<span id="cb94-5"><a href="#cb94-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 1
+  Übersetzung
+  &lt;chr&gt;      
+1 &lt;NA&gt;       
+2 beherrschen</code></pre>
+</div>
+</div>
+<p>Without the pipe (<code>|&gt;</code>), these commands become difficult to read:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb96"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb96-1"><a href="#cb96-1" aria-hidden="true" tabindex="-1"></a><span class="fu">distinct</span>(<span class="fu">select</span>(<span class="fu">filter</span>(all_data, Wort <span class="sc">==</span> <span class="st">"behärska"</span>), Übersetzung))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 1
+  Übersetzung
+  &lt;chr&gt;      
+1 &lt;NA&gt;       
+2 beherrschen</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="pivoting" class="level2">
+<h2 class="anchored" data-anchor-id="pivoting">Pivoting</h2>
+<p>In the course of an analysis, it is often necessary to convert a long-ish dataset to a wider one, and vice versa. This process is known as <em>pivoting</em>. To illustrate pivoting, we’ll make use of a more realistic – and more complicated – dataset derived from a longitudinal project on the development of reading and writing skills in Portuguese–French and Portuguese–German bilingual children (<a href="https://doi.org/10.21832/9781783099054-006">Desgrippes et al.&nbsp;2017</a>, <a href="https://doi.org/10.21832/9781783099054-005">Pestana et al.&nbsp;2017</a>).</p>
+<p>We read in the dataset <code>helascot_skills.csv</code> as <code>skills</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>skills <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"helascot_skills.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1904 Columns: 6
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Subject, LanguageTested
+dbl (4): Time, Reading, Argumentation, Narration
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a>skills</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,904 × 6
+   Subject   Time LanguageTested Reading Argumentation Narration
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;            &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+ 1 A_PLF_1      1 French           0.211             7        NA
+ 2 A_PLF_1      1 Portuguese       0.579             9         6
+ 3 A_PLF_1      2 French           0.684            14        10
+ 4 A_PLF_1      2 Portuguese       0.737            13         9
+ 5 A_PLF_1      3 French           0.947            14         8
+ 6 A_PLF_1      3 Portuguese       0.842            13        NA
+ 7 A_PLF_10     1 French           0.579             5        10
+ 8 A_PLF_10     1 Portuguese       0.316             6         7
+ 9 A_PLF_10     2 French           0.474            10         8
+10 A_PLF_10     2 Portuguese       0.579             7        NA
+# ℹ 1,894 more rows</code></pre>
+</div>
+</div>
+<p>For each participant (<code>Subject</code>) at each <code>Time</code> (T1, T2, T3) and for each <code>LanguageTested</code> (Portuguese, French, German), we have up to three scores, <code>Reading</code>, <code>Argumentation</code> and <code>Narration</code>, arranged next to each other. But let’s say we wanted to compute, for each participant, their progress on each task in each language from T1 to T2 and from T2 to T3. The way the data are laid out at present, this would at best be pretty difficult to do. But it would be easy if only the data were arranged differently, namely with all three measurements per participant and task next to each other. We can convert this dataset to the desired format in two steps.</p>
+<p>First, we make the dataset longer by stacking the different scores under each other rather than next to each other. To this end, we use the function <code>pivot_longer()</code> and specify that we want to stack the values in the <code>Reading</code>, <code>Argumentation</code>, and <code>Narration</code> columns under each other, that we want to call the resulting column <code>Score</code>, and that we want to put the column names in a new column called <code>Skill</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a>skills_longer <span class="ot">&lt;-</span> skills <span class="sc">|&gt;</span> </span>
+<span id="cb102-2"><a href="#cb102-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"Reading"</span>, <span class="st">"Argumentation"</span>, <span class="st">"Narration"</span>),</span>
+<span id="cb102-3"><a href="#cb102-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"Skill"</span>, <span class="at">values_to =</span> <span class="st">"Score"</span>)</span>
+<span id="cb102-4"><a href="#cb102-4" aria-hidden="true" tabindex="-1"></a>skills_longer</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5,712 × 5
+   Subject  Time LanguageTested Skill          Score
+   &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt;          &lt;chr&gt;          &lt;dbl&gt;
+ 1 A_PLF_1     1 French         Reading        0.211
+ 2 A_PLF_1     1 French         Argumentation  7    
+ 3 A_PLF_1     1 French         Narration     NA    
+ 4 A_PLF_1     1 Portuguese     Reading        0.579
+ 5 A_PLF_1     1 Portuguese     Argumentation  9    
+ 6 A_PLF_1     1 Portuguese     Narration      6    
+ 7 A_PLF_1     2 French         Reading        0.684
+ 8 A_PLF_1     2 French         Argumentation 14    
+ 9 A_PLF_1     2 French         Narration     10    
+10 A_PLF_1     2 Portuguese     Reading        0.737
+# ℹ 5,702 more rows</code></pre>
+</div>
+</div>
+<p>Then, we make this tibble wider by putting the three measurements per skill and language next to each other using <code>pivot_wider()</code>. We also prefix the <code>Time</code> values with a <code>T</code>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb104"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a>skills_wider_time <span class="ot">&lt;-</span> skills_longer <span class="sc">|&gt;</span> </span>
+<span id="cb104-2"><a href="#cb104-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> Time, <span class="at">values_from =</span> Score,</span>
+<span id="cb104-3"><a href="#cb104-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">names_prefix =</span> <span class="st">"T"</span>)</span>
+<span id="cb104-4"><a href="#cb104-4" aria-hidden="true" tabindex="-1"></a>skills_wider_time</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,100 × 6
+   Subject  LanguageTested Skill             T1     T2     T3
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;          &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+ 1 A_PLF_1  French         Reading        0.211  0.684  0.947
+ 2 A_PLF_1  French         Argumentation  7     14     14    
+ 3 A_PLF_1  French         Narration     NA     10      8    
+ 4 A_PLF_1  Portuguese     Reading        0.579  0.737  0.842
+ 5 A_PLF_1  Portuguese     Argumentation  9     13     13    
+ 6 A_PLF_1  Portuguese     Narration      6      9     NA    
+ 7 A_PLF_10 French         Reading        0.579  0.474  0.316
+ 8 A_PLF_10 French         Argumentation  5     10     13    
+ 9 A_PLF_10 French         Narration     10      8      8    
+10 A_PLF_10 Portuguese     Reading        0.316  0.579  0.368
+# ℹ 2,090 more rows</code></pre>
+</div>
+</div>
+<p>Using <code>mutate()</code>, we can now easily compute the differences between <code>T1</code> and <code>T2</code> and between <code>T2</code> and <code>T3</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb106"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a>skills_wider_time <span class="sc">|&gt;</span> </span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ProgressT1_T2 =</span> T2 <span class="sc">-</span> T1,</span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">ProgressT2_T3 =</span> T3 <span class="sc">-</span> T2) <span class="sc">|&gt;</span> </span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Subject, LanguageTested, Skill, ProgressT1_T2, ProgressT2_T3)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,100 × 5
+   Subject  LanguageTested Skill         ProgressT1_T2 ProgressT2_T3
+   &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;                 &lt;dbl&gt;         &lt;dbl&gt;
+ 1 A_PLF_1  French         Reading               0.474         0.263
+ 2 A_PLF_1  French         Argumentation         7             0    
+ 3 A_PLF_1  French         Narration            NA            -2    
+ 4 A_PLF_1  Portuguese     Reading               0.158         0.105
+ 5 A_PLF_1  Portuguese     Argumentation         4             0    
+ 6 A_PLF_1  Portuguese     Narration             3            NA    
+ 7 A_PLF_10 French         Reading              -0.105        -0.158
+ 8 A_PLF_10 French         Argumentation         5             3    
+ 9 A_PLF_10 French         Narration            -2             0    
+10 A_PLF_10 Portuguese     Reading               0.263        -0.211
+# ℹ 2,090 more rows</code></pre>
+</div>
+</div>
+<p>Now imagine that we wanted to compute, for each participant in each skill at each data collection, the difference between the Portuguese score and the German/French score. The first step is the same, resulting in <code>skills_longer</code>. The second step is now similar, but we put the different languages next to each other:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb108"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="ot">&lt;-</span> skills_longer <span class="sc">|&gt;</span> </span>
+<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> LanguageTested, <span class="at">values_from =</span> Score)</span>
+<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>skills_wider_language</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3,999 × 6
+   Subject   Time Skill         French Portuguese German
+   &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+ 1 A_PLF_1      1 Reading        0.211      0.579     NA
+ 2 A_PLF_1      1 Argumentation  7          9         NA
+ 3 A_PLF_1      1 Narration     NA          6         NA
+ 4 A_PLF_1      2 Reading        0.684      0.737     NA
+ 5 A_PLF_1      2 Argumentation 14         13         NA
+ 6 A_PLF_1      2 Narration     10          9         NA
+ 7 A_PLF_1      3 Reading        0.947      0.842     NA
+ 8 A_PLF_1      3 Argumentation 14         13         NA
+ 9 A_PLF_1      3 Narration      8         NA         NA
+10 A_PLF_10     1 Reading        0.579      0.316     NA
+# ℹ 3,989 more rows</code></pre>
+</div>
+</div>
+<p>Incidentally, not all values for <code>German</code> are <code>NA</code>. It’s just that the first couple of children were tested in French and Portuguese, not in German. We can check this like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="sc">|&gt;</span> </span>
+<span id="cb110-2"><a href="#cb110-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 6
+   Subject    Time Skill         French Portuguese German
+   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;
+ 1 R_CF_13       3 Reading        0.632     NA     NA    
+ 2 T_CF_11       3 Reading        0.368     NA     NA    
+ 3 AL_CP_19      2 Reading       NA          0.632 NA    
+ 4 Y_PNF_20      3 Narration      7          8     NA    
+ 5 U_CD_9        3 Reading       NA         NA      0.737
+ 6 E_PLD_15      2 Argumentation NA         12     NA    
+ 7 Q_CF_9        1 Argumentation 16         NA     NA    
+ 8 AD_PLF_24     2 Narration      5          7     NA    
+ 9 Z_PLF_7       2 Narration     12          8     NA    
+10 H_PLD_7       2 Narration     NA          7     NA    </code></pre>
+</div>
+</div>
+<p>If we needed to, we could make this dataset wider still:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb112"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>skills_wider_time_language <span class="ot">&lt;-</span> skills_longer <span class="sc">|&gt;</span> </span>
+<span id="cb112-2"><a href="#cb112-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="fu">c</span>(LanguageTested, Time), <span class="co"># combination of Language and Time</span></span>
+<span id="cb112-3"><a href="#cb112-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> Score)</span>
+<span id="cb112-4"><a href="#cb112-4" aria-hidden="true" tabindex="-1"></a>skills_wider_time_language</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1,410 × 11
+   Subject  Skill         French_1 Portuguese_1 French_2 Portuguese_2 French_3
+   &lt;chr&gt;    &lt;chr&gt;            &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
+ 1 A_PLF_1  Reading          0.211        0.579    0.684        0.737    0.947
+ 2 A_PLF_1  Argumentation    7            9       14           13       14    
+ 3 A_PLF_1  Narration       NA            6       10            9        8    
+ 4 A_PLF_10 Reading          0.579        0.316    0.474        0.579    0.316
+ 5 A_PLF_10 Argumentation    5            6       10            7       13    
+ 6 A_PLF_10 Narration       10            7        8           NA        8    
+ 7 A_PLF_12 Reading          0.895       NA        1            0.947    0.947
+ 8 A_PLF_12 Argumentation   10           NA       17           18       21    
+ 9 A_PLF_12 Narration       11           NA       14           12       12    
+10 A_PLF_13 Reading          0.474        0.316    0.421        0.526    0.579
+# ℹ 1,400 more rows
+# ℹ 4 more variables: Portuguese_3 &lt;dbl&gt;, German_1 &lt;dbl&gt;, German_2 &lt;dbl&gt;,
+#   German_3 &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>We could reconvert this tibble to a long one using the code snippet below. The code becomes a bit more complex: The notation <code>French_1:German_3</code> selects all columns between <code>French_1</code> and <code>German_3</code> (including), whereas a so-called <em>regular expression</em> (regex) is used to parse these column names into the <code>Language</code> bit and into the <code>Time</code> bit. For the present example, we don’t need this code snippet since we already have <code>skills_longer</code>. But I wanted to illustrate that such conversions are <em>possible</em>. If you ever need to convert a similar dataset to a longer format, you now know that you can look up the details on the help page of <code>pivot_longer()</code> (<code>?pivot_longer</code>) and take it from there:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a>skills_wider_time_language <span class="sc">|&gt;</span> </span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> French_1<span class="sc">:</span>German_3,</span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="fu">c</span>(<span class="st">"Language"</span>, <span class="st">"Time"</span>),</span>
+<span id="cb114-4"><a href="#cb114-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_pattern =</span> <span class="st">"(.*)_(.*)"</span>,</span>
+<span id="cb114-5"><a href="#cb114-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"Score"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12,690 × 5
+   Subject Skill         Language   Time   Score
+   &lt;chr&gt;   &lt;chr&gt;         &lt;chr&gt;      &lt;chr&gt;  &lt;dbl&gt;
+ 1 A_PLF_1 Reading       French     1      0.211
+ 2 A_PLF_1 Reading       Portuguese 1      0.579
+ 3 A_PLF_1 Reading       French     2      0.684
+ 4 A_PLF_1 Reading       Portuguese 2      0.737
+ 5 A_PLF_1 Reading       French     3      0.947
+ 6 A_PLF_1 Reading       Portuguese 3      0.842
+ 7 A_PLF_1 Reading       German     1     NA    
+ 8 A_PLF_1 Reading       German     2     NA    
+ 9 A_PLF_1 Reading       German     3     NA    
+10 A_PLF_1 Argumentation French     1      7    
+# ℹ 12,680 more rows</code></pre>
+</div>
+</div>
+<p>Alternatively, we could have used <code>starts_with(c("French", "Portuguese", "German"))</code> to select the relevant columns.</p>
+</section>
+<section id="summaries" class="level2">
+<h2 class="anchored" data-anchor-id="summaries">Summaries</h2>
+<p>Using the <code>summarise()</code> function, we can easily summarise large tibbles. For instance, we can compute the average (mean) narration and argumentation scores in the <code>skills</code> tibble like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a>skills <span class="sc">|&gt;</span> </span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_narr =</span> <span class="fu">mean</span>(Narration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_arg  =</span> <span class="fu">mean</span>(Argumentation, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 2
+  mean_narr mean_arg
+      &lt;dbl&gt;    &lt;dbl&gt;
+1      8.51     13.0</code></pre>
+</div>
+</div>
+<p>We set the <code>na.rm</code> parameter in the <code>mean()</code> call to <code>TRUE</code> since there are several missing observations in both the <code>Narration</code> and <code>Argumentation</code> variable. If we didn’t set <code>na.rm</code> to <code>TRUE</code>, the result of both computations would be <code>NA</code>. By setting <code>na.rm</code> to <code>TRUE</code>, missing observations are ignored.</p>
+<p><code>summarise()</code> is often used in conjuction with <code>group_by()</code>, which splits up a tibble into subgroups. This way, we can straightforwardly compute summaries for different subgroups. For instance, if we wanted to compute the mean narration and argumentation scores for each time of data collection and each language tested, we could use the following code snippet:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>skills <span class="sc">|&gt;</span> </span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Time, LanguageTested) <span class="sc">|&gt;</span> </span>
+<span id="cb118-3"><a href="#cb118-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_narr =</span> <span class="fu">mean</span>(Narration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb118-4"><a href="#cb118-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean_arg  =</span> <span class="fu">mean</span>(Argumentation, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb118-5"><a href="#cb118-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 4
+   Time LanguageTested mean_narr mean_arg
+  &lt;dbl&gt; &lt;chr&gt;              &lt;dbl&gt;    &lt;dbl&gt;
+1     1 French              7.79    11.2 
+2     1 German              6.33     9.46
+3     1 Portuguese          8.50    11.4 
+4     2 French              8.37    13.2 
+5     2 German              7.06    12.2 
+6     2 Portuguese          9.16    13.3 
+7     3 French             10.1     16.3 
+8     3 German              7.68    13.2 
+9     3 Portuguese         10.2     16   </code></pre>
+</div>
+</div>
+<p>By setting <code>.groups = "drop"</code>, you make sure that the grouping applied to <code>skills</code> doesn’t apply to the summary tibble any more. (It’s not so important.)</p>
+<p>We can treat these summary tibbles like ordinary tibbles and apply all of the other commands to them:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>skills <span class="sc">|&gt;</span> </span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Time, LanguageTested) <span class="sc">|&gt;</span> </span>
+<span id="cb120-3"><a href="#cb120-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_narr =</span> <span class="fu">mean</span>(Narration, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb120-4"><a href="#cb120-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb120-5"><a href="#cb120-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">"Time"</span>, <span class="at">names_prefix =</span> <span class="st">"T"</span>, <span class="at">values_from =</span> <span class="st">"mean_narr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 4
+  LanguageTested    T1    T2    T3
+  &lt;chr&gt;          &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+1 French          7.79  8.37 10.1 
+2 German          6.33  7.06  7.68
+3 Portuguese      8.50  9.16 10.2 </code></pre>
+</div>
+</div>
+<p>In addition to <code>mean()</code>, here are some further functions that are often used when computing summaries; see the functions’ help pages for details:</p>
+<ul>
+<li><code>median()</code>,</li>
+<li><code>quantile()</code>,</li>
+<li><code>min()</code> and <code>max()</code>,</li>
+<li><code>sd()</code> and <code>var()</code> for the sample standard deviation and sample variance, respectively,</li>
+<li><code>mad()</code> for the (adjusted) median absolute deviation,</li>
+<li><code>n()</code> for obtaining the number of observations,</li>
+<li><code>sum()</code>.</li>
+</ul>
+<p>The <code>mean()</code> function can also be used to compute proportions. Consider the following example. The <code>is.na()</code> function checks if a value is <code>NA</code> (in which case it returns <code>TRUE</code>) or not (<code>FALSE</code>). If we compute the <code>mean()</code> of a bunch of <code>TRUE/FALSE</code> values, we obtain the proportion of values that are <code>TRUE</code>. Similarly, the <code>sum()</code> of a bunch of <code>TRUE/FALSE</code> values is the number of <code>TRUE</code> values. Hence, we can quickly obtain the proportion, and number, of the missing <code>Narration</code> scores for each combination of <code>Time</code> and <code>LanguageTested</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a>skills <span class="sc">|&gt;</span> </span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Time, LanguageTested) <span class="sc">|&gt;</span> </span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">prop_narr_NA =</span> <span class="fu">mean</span>(<span class="fu">is.na</span>(Narration)),</span>
+<span id="cb122-5"><a href="#cb122-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">nr_narr_NA =</span> <span class="fu">sum</span>(<span class="fu">is.na</span>(Narration)),</span>
+<span id="cb122-6"><a href="#cb122-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb122-7"><a href="#cb122-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb122-8"><a href="#cb122-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 5
+   Time LanguageTested prop_narr_NA nr_narr_NA     n
+  &lt;dbl&gt; &lt;chr&gt;                 &lt;dbl&gt;      &lt;int&gt; &lt;int&gt;
+1     1 French               0.297          54   182
+2     1 German               0.0815         15   184
+3     1 Portuguese           0.141          40   284
+4     2 French               0.120          22   183
+5     2 German               0.0862         15   174
+6     2 Portuguese           0.129          36   280
+7     3 French               0.0632         11   174
+8     3 German               0.0581         10   172
+9     3 Portuguese           0.0923         25   271</code></pre>
+</div>
+</div>
+</section>
+<section id="string-manipulation" class="level2">
+<h2 class="anchored" data-anchor-id="string-manipulation">String manipulation</h2>
+<p>It often happens that a single cell in a dataset contains different pieces of information. So, too, it is the case in our current example. The first participant in the dataset is referred to as <code>A_PLF_1</code>:</p>
+<ul>
+<li>The <code>A</code> in this ID refers to their class.</li>
+<li>The <code>PLF</code> tells us that this participant resided in French-speaking Switzerland (<code>F</code>), had a Portuguese background (<code>P</code>) and took Portuguese heritage and language courses (<code>L</code>). Other abbreviations in the dataset are <code>CD</code>, <code>CF</code>, and <code>CP</code> for comparison groups in German-speaking Switzerland, French-speaking Switzerland, and Portugal, respectively, <code>PLD</code> for participants residing in German-speaking Switzerland with a Portuguese background that attended a Portuguese course, as well as <code>PND</code> and <code>PNF</code> for participants in German- and French-speaking Switzerland, respectively, with a Portuguese background that did not take Portuguese classes.</li>
+<li>The <code>1</code> uniquely identifies this participant within its class.</li>
+</ul>
+<p>It could make sense to split up the information contained in this one cell into multiple cells. Thankfully, the strings in <code>Subject</code> are structured logically and consistently: the different pieces of information are separated using underscores (<code>"_"</code>). We can hence split these strings at the underscores and retrieve the first and second pieces like so:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="ot">&lt;-</span> skills_wider_language <span class="sc">|&gt;</span> </span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Class =</span> <span class="fu">str_split_i</span>(Subject, <span class="st">"_"</span>, <span class="dv">1</span>),</span>
+<span id="cb124-4"><a href="#cb124-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">Group =</span> <span class="fu">str_split_i</span>(Subject, <span class="st">"_"</span>, <span class="dv">2</span>)</span>
+<span id="cb124-5"><a href="#cb124-5" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb124-6"><a href="#cb124-6" aria-hidden="true" tabindex="-1"></a><span class="co"># check:</span></span>
+<span id="cb124-7"><a href="#cb124-7" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="sc">|&gt;</span> </span>
+<span id="cb124-8"><a href="#cb124-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Subject, Class, Group) <span class="sc">|&gt;</span> </span>
+<span id="cb124-9"><a href="#cb124-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 3
+   Subject  Class Group
+   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;
+ 1 Q_CF_5   Q     CF   
+ 2 O_PLD_16 O     PLD  
+ 3 AL_CP_9  AL    CP   
+ 4 R_CF_17  R     CF   
+ 5 L_PLD_9  L     PLD  
+ 6 W_CF_20  W     CF   
+ 7 E_PLD_4  E     PLD  
+ 8 AL_CP_21 AL    CP   
+ 9 AI_CP_7  AI    CP   
+10 R_CF_9   R     CF   </code></pre>
+</div>
+</div>
+<p>The examples/exercises will showcase some further applications of string manipulation, but I refer to the (stringr documentation)[https://stringr.tidyverse.org/] for further guidance.</p>
+<p>We can now further break down the information contained in the new <code>Group</code> column, for instance as follows:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb126"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="ot">&lt;-</span> skills_wider_language <span class="sc">|&gt;</span> </span>
+<span id="cb126-2"><a href="#cb126-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">language_group =</span> <span class="fu">case_when</span>(</span>
+<span id="cb126-3"><a href="#cb126-3" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">==</span> <span class="st">"CP"</span> <span class="sc">~</span> <span class="st">"Portuguese control"</span>,</span>
+<span id="cb126-4"><a href="#cb126-4" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">==</span> <span class="st">"CF"</span> <span class="sc">~</span> <span class="st">"French control"</span>,</span>
+<span id="cb126-5"><a href="#cb126-5" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">==</span> <span class="st">"CD"</span> <span class="sc">~</span> <span class="st">"German control"</span>,</span>
+<span id="cb126-6"><a href="#cb126-6" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"PLF"</span>, <span class="st">"PNF"</span>) <span class="sc">~</span> <span class="st">"French-Portuguese"</span>,</span>
+<span id="cb126-7"><a href="#cb126-7" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"PLD"</span>, <span class="st">"PND"</span>) <span class="sc">~</span> <span class="st">"German-Portuguese"</span>,</span>
+<span id="cb126-8"><a href="#cb126-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span>  <span class="st">"other"</span></span>
+<span id="cb126-9"><a href="#cb126-9" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span> </span>
+<span id="cb126-10"><a href="#cb126-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">heritage_course =</span> <span class="fu">case_when</span>(</span>
+<span id="cb126-11"><a href="#cb126-11" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"PLF"</span>, <span class="st">"PLD"</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb126-12"><a href="#cb126-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span>  <span class="dv">0</span></span>
+<span id="cb126-13"><a href="#cb126-13" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span> </span>
+<span id="cb126-14"><a href="#cb126-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">has_German =</span> <span class="fu">case_when</span>(</span>
+<span id="cb126-15"><a href="#cb126-15" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"CD"</span>, <span class="st">"PLD"</span>, <span class="st">"PND"</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb126-16"><a href="#cb126-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span>  <span class="dv">0</span></span>
+<span id="cb126-17"><a href="#cb126-17" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span> </span>
+<span id="cb126-18"><a href="#cb126-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">has_French =</span> <span class="fu">case_when</span>(</span>
+<span id="cb126-19"><a href="#cb126-19" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"CF"</span>, <span class="st">"PLF"</span>, <span class="st">"PNF"</span>) <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb126-20"><a href="#cb126-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span>  <span class="dv">0</span></span>
+<span id="cb126-21"><a href="#cb126-21" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span> </span>
+<span id="cb126-22"><a href="#cb126-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">has_Portuguese =</span> <span class="fu">case_when</span>(</span>
+<span id="cb126-23"><a href="#cb126-23" aria-hidden="true" tabindex="-1"></a>    Group <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"CF"</span>, <span class="st">"CD"</span>) <span class="sc">~</span> <span class="dv">0</span>,</span>
+<span id="cb126-24"><a href="#cb126-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span>  <span class="dv">1</span></span>
+<span id="cb126-25"><a href="#cb126-25" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb126-26"><a href="#cb126-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb126-27"><a href="#cb126-27" aria-hidden="true" tabindex="-1"></a><span class="co"># check:</span></span>
+<span id="cb126-28"><a href="#cb126-28" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="sc">|&gt;</span> </span>
+<span id="cb126-29"><a href="#cb126-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(Subject, language_group, heritage_course, has_German, has_French, has_Portuguese) <span class="sc">|&gt;</span> </span>
+<span id="cb126-30"><a href="#cb126-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample_n</span>(<span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 6
+   Subject  language_group  heritage_course has_German has_French has_Portuguese
+   &lt;chr&gt;    &lt;chr&gt;                     &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;          &lt;dbl&gt;
+ 1 AG_PLD_2 German-Portugu…               1          1          0              1
+ 2 X_PND_1  German-Portugu…               0          1          0              1
+ 3 AK_CP_19 Portuguese con…               0          0          0              1
+ 4 AD_PLF_3 French-Portugu…               1          0          1              1
+ 5 AI_CP_19 Portuguese con…               0          0          0              1
+ 6 AC_PLD_4 German-Portugu…               1          1          0              1
+ 7 L_PLD_13 German-Portugu…               1          1          0              1
+ 8 L_PLD_14 German-Portugu…               1          1          0              1
+ 9 AL_CP_24 Portuguese con…               0          0          0              1
+10 M_PLD_8  German-Portugu…               1          1          0              1</code></pre>
+</div>
+</div>
+</section>
+<section id="a-full-fledged-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-full-fledged-example">A full-fledged example</h2>
+<p>We had the children in the French/German/Portuguese project write short narrative and argumentative texts in each of their languages at three points in time. The quality of these texts was scored using a grid (<a href="https://doi.org/10.21832/9781783099054-006">Desgrippes et al.&nbsp;2017</a>); it is these scores that are listed in the <code>skills</code> tibble we worked with above. In addition, 3,060 of these texts were rated for their lexical richness by between two and eighteen naïve (i.e., non-instructed) raters each using a 1-to-9 scale. The individual ratings are available in the file <code>helascot_ratings.csv</code>. Furthermore, we computed a bunch of lexical metrics for each text, such as the number of tokens, the mean corpus frequency of the words occurring in the text, etc. These metric are avilable in the file <code>helascot_metrics.csv</code>; see <a href="https://doi.org/10.17239/jowr-2019.10.03.04">Vanhove et al.&nbsp;(2019)</a> and <a href="https://osf.io/6bywg">Vanhove (2019)</a> for details.</p>
+<p>We’ll use these datasets to answer three questions:</p>
+<ul>
+<li>What’s the relation between the average lexical richness ratings per text and the text’s Guiraud index? (The Guiraud index is the ratio of the number of types in a text and the square root of the number of tokens in that text.)</li>
+<li>What’s the relation between the average lexical richness ratings per text and the mean corpus frequency of the words occuring in the texts?</li>
+<li>What’s the relation between the grid-based ratings and the lexical richness ratings?</li>
+</ul>
+<p>In doing so, we’ll need to make use of some of the tools introduced earlier.</p>
+<section id="reading-in-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="reading-in-the-data">Reading in the data</h3>
+<p>Let’s start from a clean slate and read in the three datasets:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb128"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb128-1"><a href="#cb128-1" aria-hidden="true" tabindex="-1"></a>skills <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"helascot_skills.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 1904 Columns: 6
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (2): Subject, LanguageTested
+dbl (4): Time, Reading, Argumentation, Narration
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb130"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb130-1"><a href="#cb130-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"helascot_metrics.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 3060 Columns: 137
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr   (8): Text, Subject, Text_Language, Text_Type, LemmawordsNotInSUBTLEX, ...
+dbl (129): Time, TTR, Guiraud, nTokens, nTypes, nLemmas, meanWordLength, MST...
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb132"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb132-1"><a href="#cb132-1" aria-hidden="true" tabindex="-1"></a>ratings <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"data"</span>, <span class="st">"helascot_ratings.csv"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Rows: 29179 Columns: 20
+── Column specification ────────────────────────────────────────────────────────
+Delimiter: ","
+chr (15): Batch, Rater, Text, Subject, Text_Language, Text_Type, Rater_Sex, ...
+dbl  (4): Trial, Rating, Time, Rater_Age
+lgl  (1): Rater_NativeLanguageOther
+
+ℹ Use `spec()` to retrieve the full column specification for this data.
+ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+</div>
+</div>
+<p>Inspect the structure of these three datasets. (<strong>How?</strong>) Note that</p>
+<ul>
+<li><code>skills</code> contains one row per combination of <code>Subject</code>, <code>Time</code> and <code>LanguageTested</code>;</li>
+<li><code>metrics</code> contains one row per text, i.e., one row per combination of <code>Subject</code>, <code>Text_Language</code>, <code>Text_Type</code> and <code>Time</code>;</li>
+<li><code>ratings</code> contains one row per rating, i.e., one row per combination of <code>Rater</code> and <code>Text</code>.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>These datasets are already pretty clean and a lot of work (partly manual, partly using R, partly using other tools) went into creating them. See the technical report as well as the R code available from <a href="https://osf.io/vw4pc/">osf.io</a>.</p>
+</div>
+</div>
+<p>There are many ways to skin a cat. But it seems to me that the following course of action is reasonable:</p>
+<ol type="1">
+<li>Using <code>ratings</code>, compute the average <code>Rating</code> per text.</li>
+<li>Add these average ratings to <code>metrics</code> and draw some plots. (More on plotting in the second part!)</li>
+<li>Make <code>skills</code> longer and add the average ratings to it. Then draw some more plots.</li>
+</ol>
+</section>
+<section id="average-rating-per-text" class="level3">
+<h3 class="anchored" data-anchor-id="average-rating-per-text">Average rating per text</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a>rating_per_text <span class="ot">&lt;-</span> ratings <span class="sc">|&gt;</span> </span>
+<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Text, Subject, Text_Language, Text_Type, Time) <span class="sc">|&gt;</span> </span>
+<span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_rating =</span> <span class="fu">mean</span>(Rating),</span>
+<span id="cb134-4"><a href="#cb134-4" aria-hidden="true" tabindex="-1"></a>            <span class="at">n_ratings =</span> <span class="fu">n</span>(),</span>
+<span id="cb134-5"><a href="#cb134-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">.groups =</span> <span class="st">"drop"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Exercise
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Some of the raters consider themselves native speakers of several languages (<code>bi-French</code> etc.), others consider themselves monolingual native speakers (<code>mono-French</code> etc.):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb135"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(ratings<span class="sc">$</span>Rater_NativeLanguage)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+      bi-French       bi-German   bi-Portuguese     mono-French     mono-German 
+           1049            2241             728            6235           14149 
+mono-Portuguese 
+           4777 </code></pre>
+</div>
+</div>
+<p>What could you do if you wanted to base the average rating per text only on the ratings provided by monolingual raters?</p>
+</div>
+</div>
+</section>
+<section id="add-to-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="add-to-metrics">Add to <code>metrics</code></h3>
+<p>The tibbles <code>metrics</code> and <code>rating_per_text</code> share a variable (<code>Text</code>), so the average ratings can easily be added to <code>metrics</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a>metrics_ratings <span class="ot">&lt;-</span> metrics <span class="sc">|&gt;</span> </span>
+<span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(rating_per_text)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(Text, Subject, Text_Language, Text_Type, Time)`</code></pre>
+</div>
+</div>
+<p>We’ll learn in the second part how to draw meaningful data plots, but here’s one way of visualising the relationship between <code>Guiraud</code> and <code>mean_rating</code>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a>metrics_ratings <span class="sc">|&gt;</span> </span>
+<span id="cb139-2"><a href="#cb139-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> Guiraud, <span class="at">y =</span> mean_rating)) <span class="sc">+</span></span>
+<span id="cb139-3"><a href="#cb139-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb139-4"><a href="#cb139-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(Time, Text_Type),</span>
+<span id="cb139-5"><a href="#cb139-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">cols =</span> <span class="fu">vars</span>(Text_Language)) <span class="sc">+</span></span>
+<span id="cb139-6"><a href="#cb139-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Guiraud value"</span>) <span class="sc">+</span></span>
+<span id="cb139-7"><a href="#cb139-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"average lexical richness rating"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="datasets_files/figure-html/unnamed-chunk-58-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Similarly, for <code>meanSUBTLEX</code> (average corpus frequency):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>metrics_ratings <span class="sc">|&gt;</span> </span>
+<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> meanSUBTLEX, <span class="at">y =</span> mean_rating)) <span class="sc">+</span></span>
+<span id="cb140-3"><a href="#cb140-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb140-4"><a href="#cb140-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(Time, Text_Type),</span>
+<span id="cb140-5"><a href="#cb140-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">cols =</span> <span class="fu">vars</span>(Text_Language)) <span class="sc">+</span></span>
+<span id="cb140-6"><a href="#cb140-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"mean SUBTLEX frequency"</span>) <span class="sc">+</span></span>
+<span id="cb140-7"><a href="#cb140-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"average lexical richness rating"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="datasets_files/figure-html/unnamed-chunk-59-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb141"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" aria-hidden="true" tabindex="-1"></a>correlations <span class="ot">&lt;-</span> metrics_ratings <span class="sc">|&gt;</span> </span>
+<span id="cb141-2"><a href="#cb141-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Text_Language, Time, Text_Type) <span class="sc">|&gt;</span> </span>
+<span id="cb141-3"><a href="#cb141-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb141-4"><a href="#cb141-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">cor_guiraud =</span> <span class="fu">cor</span>(mean_rating, Guiraud),</span>
+<span id="cb141-5"><a href="#cb141-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">cor_frequency =</span> <span class="fu">cor</span>(mean_rating, meanSUBTLEX)</span>
+<span id="cb141-6"><a href="#cb141-6" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'Text_Language', 'Time'. You can override
+using the `.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb143"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a>correlations</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 18 × 5
+# Groups:   Text_Language, Time [9]
+   Text_Language  Time Text_Type cor_guiraud cor_frequency
+   &lt;chr&gt;         &lt;dbl&gt; &lt;chr&gt;           &lt;dbl&gt;         &lt;dbl&gt;
+ 1 French            1 arg             0.526       -0.0353
+ 2 French            1 narr            0.565       -0.150 
+ 3 French            2 arg             0.525       -0.0847
+ 4 French            2 narr            0.657       -0.0964
+ 5 French            3 arg             0.654       -0.205 
+ 6 French            3 narr            0.618       -0.299 
+ 7 German            1 arg             0.710       -0.0747
+ 8 German            1 narr            0.616       -0.162 
+ 9 German            2 arg             0.643       -0.288 
+10 German            2 narr            0.758       -0.314 
+11 German            3 arg             0.694       -0.241 
+12 German            3 narr            0.704       -0.257 
+13 Portuguese        1 arg             0.703        0.196 
+14 Portuguese        1 narr            0.716        0.0248
+15 Portuguese        2 arg             0.764        0.0662
+16 Portuguese        2 narr            0.605        0.0729
+17 Portuguese        3 arg             0.777        0.222 
+18 Portuguese        3 narr            0.692       -0.0693</code></pre>
+</div>
+</div>
+</section>
+<section id="add-to-skills" class="level3">
+<h3 class="anchored" data-anchor-id="add-to-skills">Add to <code>skills</code></h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a>rating_gridscore <span class="ot">&lt;-</span> skills <span class="sc">|&gt;</span> </span>
+<span id="cb145-2"><a href="#cb145-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(Reading<span class="sc">:</span>Narration, <span class="at">names_to =</span> <span class="st">"skill"</span>,</span>
+<span id="cb145-3"><a href="#cb145-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"grid_score"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb145-4"><a href="#cb145-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(skill <span class="sc">!=</span> <span class="st">"Reading"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb145-5"><a href="#cb145-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Text_Type =</span> <span class="fu">case_when</span>(</span>
+<span id="cb145-6"><a href="#cb145-6" aria-hidden="true" tabindex="-1"></a>    skill <span class="sc">==</span> <span class="st">"Argumentation"</span> <span class="sc">~</span> <span class="st">"arg"</span>,</span>
+<span id="cb145-7"><a href="#cb145-7" aria-hidden="true" tabindex="-1"></a>    skill <span class="sc">==</span> <span class="st">"Narration"</span> <span class="sc">~</span> <span class="st">"narr"</span></span>
+<span id="cb145-8"><a href="#cb145-8" aria-hidden="true" tabindex="-1"></a>  )) <span class="sc">|&gt;</span> </span>
+<span id="cb145-9"><a href="#cb145-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(rating_per_text,</span>
+<span id="cb145-10"><a href="#cb145-10" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(Text_Type, Subject, Time, LanguageTested <span class="sc">==</span> Text_Language))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>rating_gridscore <span class="sc">|&gt;</span> </span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(grid_score)) <span class="sc">|&gt;</span> </span>
+<span id="cb146-3"><a href="#cb146-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(mean_rating)) <span class="sc">|&gt;</span> </span>
+<span id="cb146-4"><a href="#cb146-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> mean_rating, <span class="at">y =</span> grid_score)) <span class="sc">+</span></span>
+<span id="cb146-5"><a href="#cb146-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">shape =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb146-6"><a href="#cb146-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(Time, Text_Type),</span>
+<span id="cb146-7"><a href="#cb146-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">cols =</span> <span class="fu">vars</span>(LanguageTested))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="datasets_files/figure-html/unnamed-chunk-62-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a>rating_gridscore <span class="sc">|&gt;</span> </span>
+<span id="cb147-2"><a href="#cb147-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(grid_score)) <span class="sc">|&gt;</span> </span>
+<span id="cb147-3"><a href="#cb147-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(mean_rating)) <span class="sc">|&gt;</span> </span>
+<span id="cb147-4"><a href="#cb147-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(LanguageTested, Time, Text_Type) <span class="sc">|&gt;</span> </span>
+<span id="cb147-5"><a href="#cb147-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb147-6"><a href="#cb147-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">cor_score =</span> <span class="fu">cor</span>(mean_rating, grid_score),</span>
+<span id="cb147-7"><a href="#cb147-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb147-8"><a href="#cb147-8" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 18 × 4
+   LanguageTested  Time Text_Type cor_score
+   &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;         &lt;dbl&gt;
+ 1 French             1 arg           0.391
+ 2 French             1 narr          0.445
+ 3 French             2 arg           0.395
+ 4 French             2 narr          0.389
+ 5 French             3 arg           0.490
+ 6 French             3 narr          0.487
+ 7 German             1 arg           0.585
+ 8 German             1 narr          0.282
+ 9 German             2 arg           0.522
+10 German             2 narr          0.512
+11 German             3 arg           0.499
+12 German             3 narr          0.428
+13 Portuguese         1 arg           0.528
+14 Portuguese         1 narr          0.417
+15 Portuguese         2 arg           0.572
+16 Portuguese         2 narr          0.372
+17 Portuguese         3 arg           0.557
+18 Portuguese         3 narr          0.506</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="suggestions-for-reading" class="level2">
+<h2 class="anchored" data-anchor-id="suggestions-for-reading">Suggestions for reading</h2>
+<p>The Bible for working with tibbles in R is Wickham et al.’s <em>R for Data Science</em>, which is freely available from <a href="https://r4ds.hadley.nz/">r4ds.hadley.nz</a>.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
