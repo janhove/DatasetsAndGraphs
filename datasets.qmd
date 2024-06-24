@@ -8,6 +8,7 @@ format:
     toc: true
     number-sections: false
     code-line-numbers: false
+    df-print: paged
 editor: source
 ---
 
@@ -17,47 +18,10 @@ set.seed(2024-06-28)
 
 ## Goal
 The goal of this primer is to furnish you with the basic tools and knowledge
-to organise, manipulate, and query datasets in research contexts.
-
-::: {.callout-tip}
-## Type, don't copy-paste -- at home
-You're going to take away much more from this primer
-if you copy the code snippets by _typing_ them rather
-than by copy-pasting them.
-That said, I strongly advise you to do so in your own
-time and not as you're attending the lecture:
-Some things are bound to go wrong (perhaps a comma
-in the wrong spot, a missing bracket or an upper-case
-letter that should have been a lower-case one), and
-as you're trying to fix the errors, you'll lose track of the lecture.
-
-So work through the code snippets at home, and be patient with yourselves.
-:::
-
-<!-- ::: {.callout-warning} -->
-<!-- ## Tip with Title -->
-
-<!-- This is an example of a callout with a title. -->
-<!-- ::: -->
-
-<!-- ::: {.callout-important} -->
-<!-- ## Tip with Title -->
-
-<!-- This is an example of a callout with a title. -->
-<!-- ::: -->
-
-<!-- ::: {.callout-caution} -->
-<!-- ## Tip with Title -->
-
-<!-- This is an example of a callout with a title. -->
-<!-- ::: -->
-
-<!-- ::: {.callout-caution collapse="true"} -->
-<!-- ## Expand To Learn About Collapse -->
-
-<!-- This is an example of a 'folded' caution callout that can be expanded by the user. You can use `collapse="true"` to collapse it by default or `collapse="false"` to make a collapsible callout that is expanded by default. -->
-<!-- ::: -->
-
+to organise, transform, and query datasets in research contexts.
+We'll work with [R](https://r-project.org) and more specifically with
+the [tidyverse](https://www.tidyverse.org/) add-on suite that markedly
+simplifies working with datasets.
 
 ## Compiling and organising a dataset
 Let's say we've run a study in which speakers of German read a couple
@@ -100,7 +64,7 @@ and in which all columns have the same length, and all rows have the same width.
 Examples of non-rectangular data formats are JSON and XML -- see [here](https://json.org/example.html).
 
 Broadly speaking, we can organise our data in a **wide** format or in a **long** format.
-In a wide format, all pieces of information related to a unit of data collection
+In a **wide format**, all pieces of information related to a _unit of data collection_
 are organised in a single row. For instance, we could think of each participant
 in the study as a unit of data collection, in which case we could lay out the data
 as in @fig-wide-subject. Note that the spreadsheet contains a column for each word
@@ -112,8 +76,9 @@ the data like in @fig-wide-item.
 
 ![A wide dataset with one row per word.](figs/wide_data_item.png){#fig-wide-item}
 
-In a long format, all pieces of information pertaining to an observational
-unit are organised in a single row. It's difficult to precisely define
+In a **long format**, all pieces of information pertaining to an 
+_observational unit_ are organised in a single row.
+It's difficult to precisely define
 what units of data collection and observational units are, and it wouldn't be
 too useful to have a precise definition, anyway. But in the present example,
 the observational units would be the individual responses, i.e., the individual
@@ -125,9 +90,10 @@ in a long format.
 It's usually easier to work with data in a long-ish format compared to with
 data in a wide-ish format. Moreover, when you do need your data in a wide-ish
 format for data analysis, converting a longer dataset to a wider one is typically
-easier than vice versa.
+easier than vice versa. So **when in doubt** (and assuming you have a say in the matter
+at all), arrange your data in a **long-ish format**.
 
-Make sure that all rows can be interpreted independently of one another.
+Make sure that **all rows can be interpreted independently of one another**.
 What we want to avoid is that we can't make sense of the data in some row
 because we need data from another row to do so, and this other row was
 deleted, or the order of the rows has changed, etc.
@@ -153,7 +119,7 @@ not to organise the data so that they can be analysed.
 Furthermore, the dataset needs to be rectangular. 
 @Fig-long-data-schlecht shows what _not_ to do: The additional rows reporting
 some averages don't fit in with the rest of the dataset ("Prozent Männer:" is 
-not the ID of a `Versuchsperson`, and "30" is not a `Geschlecht`.)
+not the ID of a `Versuchsperson`, and "30" is not a `Geschlecht`).
 
 ![Not like this! This dataset is not rectangular.](figs/datensatz_schlecht.png){#fig-long-data-schlecht}
 
@@ -246,9 +212,9 @@ or to the words to this dataset from the other two datasets.
 
 * Mind capitalisation. For some programs and computer languages, `Frau` and `frau`
 are the same value; for others (including R), they are not.
-* Mind trailing spaces. `Mann ` (with trailing space) and `Mann` (without trailing space) are different values to a computer.
+* Mind trailing spaces. "Mann&nbsp;" (with trailing space) and "Mann" (without trailing space) are different values to a computer.
 * Special symbols, including the Umlaut, sometimes lead to problems, especially when collaborating with people whose localisation settings differ from yours.
-* Format dates in the YYYY/MM/DD format. This way, if you alphabetically sort the data,
+* Format dates in the YYYY/MM/DD format. This way, if you sort the data alphabetically,
 they're already in chronological order.
 * Don't use colour-coding in your spreadsheet. Or if you do use it, be aware that you'll lose this information once you import your data into your statistics program.
 
@@ -258,13 +224,13 @@ After you've entered your data into a spreadsheet, all further steps in
 your analysis should be carried out in R (or Python, or Julia, or what-have-you).
 Don't calculate, sort, copy, paste, move, reshape, draw graphs etc. in Excel or whatever
 spreadsheet program you prefer. 
-Treat your finished spreadsheet as the immutable source of data from which
+Treat your finished spreadsheet as the **immutable** source of data from which
 your results will be obtained, so that when in doubt, it's clear which 
 file you should go back to.
 
 When using R (or Python, or Julia, or whatever), use (a) script(s) to read in
 the original dataset and convert the data in it to a format more amenable to
-analysis, but do not overwrite the original file.
+analysis, but whatever you do, don't overwrite the original file.
 :::
 
 ::: {.callout-tip}
@@ -278,7 +244,7 @@ erroneous data.
 Also see the blog post [_A data entry form with failsafes_](https://janhove.github.io/posts/2018-07-06-data-entry-failsafes/).
 :::
 
-## Reading in datasets
+## Working with R and RStudio
 With the data available in a rectangular spreadsheet format,
 the next challenge is to load them into a program capable of 
 analysing them. Several (free) options are available
@@ -287,8 +253,7 @@ with the `tidyverse` suite. The main reasons for this are that
 R is more popular in the humanities and the social sciences and that
 I'm just more proficient in R. Hadley Wickham lists some [further reasons](https://adv-r.hadley.nz/introduction.html#why-r).
 
-::: {.callout-note}
-## R, RStudio, and the tidyverse
+### R, RStudio, and the tidyverse
 To install R, visit the [R Project website](https://www.r-project.org).
 
 In addition, I recommend you install RStudio, which facilitates working
@@ -321,10 +286,36 @@ datasets enormously. You can install it like so:
 install.packages("tidyverse")
 ```
 
-:::
 
-::: {.callout-note}
-## R projects
+### Setting up an R project
+Next, in RStudio, click on `File > New Project... > New Directory`. 
+Navigate to somewhere on your computer where you want to create a new directory
+and give this directory a name (for instance, `DatasetsAndGraphs`). You will use this
+directory to store the data and scripts that you'll need for drawing the graphs
+in as well for saving the graphs themselves to. You don't have to tick the other options.
+
+When you're done, close RStudio. Navigate to the directory you've just created.
+You should find an `.Rproj` file there. Double-click it. If all is well, RStudio
+should fire up.
+
+Create the following subdirectories in the directory you're currently in:
+`data`, `scripts` and `figs`.
+
+On [github.com/janhove/DatasetsAndGraphs](https://github.com/janhove/DatasetsAndGraphs),
+you can find a couple of datasets (under `data`) as well as an R script 
+that defines a new function we'll use (under `functions`). Put the datasets in your
+own `data` directory and the R script in your own `functions` directory.
+
+You've now set up an R project for this pair of lectures.
+R projects aren't strictly necessary, but I find them helpful to manage different
+research projects, publications, classes I teach.
+
+### Loading the packages
+
+We'll work with the `here` and `tidyverse` packages below.
+Even if you've already installed these, you need to _load_ these packages
+in every R session in which you use them. To do so,
+execute the following lines:
 
 ```{r}
 library(here)
@@ -334,7 +325,25 @@ library(tidyverse)
 Incidentally, you don't need to install these packages every time you need them,
 but you do need to load them every time you need them in a new session.
 I recommend including the packages you need at the top of your script.
+
+::: {.callout-tip}
+## Use scripts
+With few exceptions, you should type the commands you want to execute in
+an R script (`File > New File > R Script`) rather than directly in the R console.
+While nothing terrible will happen if you do enter commands directly
+into the console, entering them into the script editor first is a good
+habit to get into: it's much easier to spot errors, save _and_ document your analysis,
+make tweaks to your code, and reuse old code in the editor than in the console.
+
+As a rule of thumb, for the analysis of large projects, 
+I tend to create separate R scripts for different parts of the analysis
+that are internally closely connected but more or less independent of the other
+parts. For instance, I might have a script for cleaning the datasets,
+another script for the analyses that are reported in Chapter 4,
+and yet another script for the analyses reported in Chapter 5.
 :::
+
+## Reading in datasets
 
 ### Excel files
 We'll focus on reading in two kinds of spreadsheets: Excel spreadsheets
@@ -361,6 +370,25 @@ We can display it by simply typing its name at the prompt:
 translations
 ```
 
+
+::: {.callout-tip}
+## Type, don't copy-paste -- at home
+You're going to take away much more from this primer
+if you copy the code snippets by _typing_ them rather
+than by copy-pasting them.
+That said, I strongly advise you to do so in your own
+time and not as you're attending the lecture:
+Some things are bound to go wrong (perhaps a comma
+in the wrong spot, a missing bracket or an upper-case
+letter that should have been a lower-case one), and
+as you're trying to fix the errors, you'll lose track of the lecture.
+
+So work through the code snippets at home, and be patient with yourselves.
+I receive error messages or unexpected outcomes all the time -- it's just that
+after using R for 15 or so years, I've become reasonably proficient at spotting
+the problems and Googling solutions :)
+:::
+
 ::: {.callout-note}
 ## Data frames and tibbles
 Rectangular data sets are referred to as _data frames_ in R.
@@ -372,19 +400,19 @@ for prettier displaying, and refers to them as _tibbles_.
 ## Empty strings interpreted as missing
 
 Note that the empty cells are automatically interpreted as missing data (`<NA>`).
-The documentation of the `read_excel` function, which you can access by typing
+The documentation of the `read_excel()` function, which you can access by typing
 `?read_excel` at the R prompt, suggests that we can override this behaviour,
 but [we can't](https://github.com/tidyverse/readxl/issues/572).
 :::
 
 If, instead of printing the entire tibble at the prompt, we just want to display
-the first few rows, we can use `slide_head`:
+the first few rows, we can use `slide_head()`:
 ```{r}
 slice_head(translations, n = 4)
 ```
 
-`slice_tail` works similarly. If you want to display a random selection of rows,
-you can use `slice_sample`:
+`slice_tail()` works similarly. If you want to display a random selection of rows,
+you can use `slice_sample()`:
 
 ```{r}
 slice_sample(translations, n = 5)
@@ -400,7 +428,7 @@ Sometimes, text strings are additionally surrounded by quotation marks.
 
 ![A spreadsheet stored as _comma-separated values_.](figs/csv.png){#fig-csv}
 
-To read in CSV files, we can use the `read_csv` function, which
+To read in CSV files, we can use the `read_csv()` function, which
 is part of the `readr` package, which in turn is automatically loaded
 when the `tidyverse` suit is loaded:
 
@@ -408,21 +436,23 @@ when the `tidyverse` suit is loaded:
 translations <- read_csv(here("data", "uebersetzungen.csv"))
 translations
 ```
-We receive a couple of messages (no errors!).
-These show that the `read_csv` function correctly recognised that
+We receive a couple of messages (not errors!).
+These show that the `read_csv()` function correctly recognised that
 the columns `Wort` and `Übersetzung` contain text ('chr', character) strings,
 whereas `Versuchsperson`, `Position` and `Richtig` contain numbers
 ('dbl' for 'double', a number format).
 
 ::: {.callout-note}
 ## Empty strings interpreted as missing
-With `read_csv`, we can specify that only cells containing "NA" 
+With `read_csv()`, we can specify that only cells containing "NA" 
 are marked as missing data:
 
 ```{r}
 translations2 <- read_csv(here("data", "uebersetzungen.csv"), na = "NA")
 translations2
 ```
+
+Note that the `Übersetzung` value in row 4 is just empty, not `NA`.
 :::
 
 Let's also read in the datasets containing the information pertaining
@@ -439,16 +469,16 @@ If you save an Excel spreadsheet as a CSV file on a French- or German-language
 computer system, the cells will be separated using semicolons rather than using
 commas. The reason is that commas are used as decimal separators in French
 and German. To read in 'CSV' files that use semicolons as cell separators,
-you can use the `read_csv2` function.
+you can use the `read_csv2()` function.
 
-Incidentally, if you use LibreOffice.org Calc instead of Excel, you can choose
+Incidentally, if you use [LibreOffice.org Calc](https://www.libreoffice.org/) instead of Excel, you can choose
 which cell separator gets used if you export a spreadsheet as a CSV file.
 :::
 
 ::: {.callout-note}
-## `read_csv` vs. `read.csv`
-More seasoned R users are probably already familiar with the `read.csv` function
-(with a dot rather than an underscore). The `read_csv` function is merely the
+## `read_csv()` vs. `read.csv()`
+More seasoned R users are probably already familiar with the `read.csv()` function
+(with a dot rather than an underscore). The `read_csv()` function is merely the
 `tidyverse` counterpart to this function. The practical differences between
 them are negligible.
 :::
@@ -463,12 +493,12 @@ For reading in SPSS, Stata and SAS files, see [haven](https://haven.tidyverse.or
 ## Joining datasets
 Having read in our three datasets as `translations`, `participants`, and `items`,
 we want to merge these datasets into one large dataset. The most useful function
-for this is `left_join`, which takes the dataset passed as its `x` argument
+for this is `left_join()`, which takes the dataset passed as its `x` argument
 and adds to this the corresponding rows from the `y` dataset:
 ```{r}
 all_data <- left_join(x = translations, y = participants)
 ```
-Note that the `left_join` function recognises that the variable shared
+Note that the `left_join()` function recognises that the variable shared
 between both datasets is called `Versuchsperson`. Hence, the information
 related to participant 1034 contained in `participants` is added to each
 row in `translations` where the `Versuchsperson` value is 1034,
@@ -477,7 +507,7 @@ and similarly for the other participants:
 ```{r}
 all_data
 ```
-If you don't want the `left_join` function to figure out what the shared variable
+If you don't want the `left_join()` function to figure out what the shared variable
 is, you can specify it explicitly:
 ```{r, eval = FALSE}
 all_data <- left_join(x = translations, y = participants, by = "Versuchsperson")
@@ -495,11 +525,11 @@ for these rows.
 
 Further join functions are the following, see `?join` for details:
 
-* `right_join`: All entries in `y` are kept. Corresponding entries in `x` are added.
-* `full_join`: All entries both datasets are kept. `NA`s are added if there is no corresponding entry in the other dataset.
-* `inner_join`: Only keep entries in `x` for which there is a corresponding entry in `y`. Add these corresponding entries.
-* `semi_join`:  Only keep entries in `x` for which there is a corresponding entry in `y`. Don't add these corresponding entries.
-* `anti_join`: Only keep entries in `x` for which there are _no_ corresponding entries in `y`.
+* `right_join(x, y)`: Keep all entries in `y`. Add corresponding entries in `x` to it.
+* `full_join(x, y)`: Keep all entries in both `x` and `y`. Add `NA`s if there is no corresponding entry in the other dataset.
+* `inner_join(x, y)`: Only keep entries in `x` for which there is a corresponding entry in `y`. Add these corresponding entries.
+* `semi_join(x, y)`:  Only keep entries in `x` for which there is a corresponding entry in `y`. Don't add these corresponding entries.
+* `anti_join(x, y)`: Only keep entries in `x` for which there are _no_ corresponding entries in `y`.
 
 In the current example, `left_join`, `full_join` and `inner_join` would all yield the same result.
 But this isn't always the case.
@@ -557,13 +587,10 @@ right
 under 'Arguments'. Predict what the output of the following two commands would look like,
 and only then check your answer.
 
-```{r}
+```{r, eval = FALSE}
 left_join(left, right)
 left_join(left, right, na_matches = "never")
 ```
-
-
-
 
 ## Queries
 
@@ -899,6 +926,38 @@ skills |>
     .groups = "drop"
   )
 ```
+
+::: {.callout-note}
+## Writing your own functions
+
+You can write your own functions. 
+For instance, an alternative to the mean and the median is
+the [Hodges--Lehmann estimator](https://en.wikipedia.org/wiki/Hodges%E2%80%93Lehmann_estimator).
+We can define a function that computes this estimator like so:
+
+```{r}
+hodges_lehmann <- function(x, na.rm = TRUE) {
+  if (na.rm) {
+    x <- x[!is.na(x)]
+  }
+  pairwise_means <- outer(x, x, FUN = "+") / 2
+  median(pairwise_means[upper.tri(pairwise_means, diag = TRUE)])
+}
+```
+
+We can then use this function in `summarise()` like so,
+```{r}
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(
+    hl_narr = hodges_lehmann(Narration),
+    .groups = "drop"
+  ) |> 
+  pivot_wider(names_from = "Time", names_prefix = "T", values_from = "hl_narr")
+```
+
+:::
+
 ## String manipulation
 It often happens that a single cell in a dataset contains 
 different pieces of information. So, too, it is the case 
@@ -935,7 +994,8 @@ skills_wider_language |>
   sample_n(10)
 ```
 The examples/exercises will showcase some further applications of string
-manipulation, but I refer to the (stringr documentation)[https://stringr.tidyverse.org/] for further guidance.
+manipulation, but I refer to the [stringr documentation](https://stringr.tidyverse.org/) 
+for further guidance.
 
 We can now further break down the information contained in the new `Group` column,
 for instance as follows:
