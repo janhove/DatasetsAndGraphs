@@ -8,6 +8,7 @@ format:
     toc: true
     number-sections: false
     code-line-numbers: false
+    df-print: paged
 editor: source
 ---
 
@@ -102,7 +103,10 @@ Histograms are particularly useful to check if
 there are any 'univariate' outliers (i.e., values that lie far from the bulk of the data if you consider only this one variable) and to see if the variable seems to be distributed approximately uniformly, normally, bimodally or more wonkily.
 
 Since you've already loaded the `tidyverse` and since you've already read in the data, we can start to draw some histograms.
-Like for last week's scatterplot, we need to define the object and the variables we want to plot (lines 1--2). Instead of drawing points, we draw a histogram:
+To this end, we need to define the object and the variables we want to plot (lines 1--2). 
+If we only executed the first two lines of the code below, all we'd see is a blank canvas.
+To draw the histogram itself, we need to add a _layer_ to this blank canvas that
+contains a histogram based on these pieces of information.
 
 ```{r}
 ggplot(data = d_hist,       # specify data set
@@ -738,7 +742,7 @@ a sense of how the actual data are distributed.
 :::
 
 
-## Putting it all together (I): Portuguese reading and writing skills
+## Putting it all together: Portuguese reading and writing skills
 
 I'll walk you through this example in the lecture.
 
@@ -918,7 +922,7 @@ To accomplish this, we can plot stimuli with neuter cognates and
 those with common-gender cognates in different boxes (_facetting_,
 see the tutorial on line charts).
 (To see what `scales = "free_y"` and `space = "free_y"` accomplish, 
-leave these parameters out of the call, i.e., using just ` facet_grid(rows = vars(DutchGender))`.)
+leave these parameters out of the call, i.e., just use ` facet_grid(rows = vars(DutchGender))`.)
 
 ```{r, fig.asp = 1.2}
 ggplot(d_dot,
