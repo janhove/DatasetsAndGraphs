@@ -1,14 +1,15 @@
 ---
 title: "Working with datasets in R: A primer"
 author: "Jan Vanhove"
-date: "28 June 2024"
+date: "Münster, 28 June 2024"
 format:
   html:
-    theme: yeti
+    theme: flatly
     toc: true
     number-sections: false
     code-line-numbers: false
     df-print: paged
+    fig-format: svg
 editor: source
 ---
 
@@ -161,6 +162,8 @@ never shown a particular word (e.g., due to a programming error)
 or that some of the participants' were irretrievably lost.
 We should enable ourselves to distinguish between these cases, 
 for instance by marking the latter cases using `NA` (_not available_).
+(Alternatively, we could explicitly label cases where the participant did
+not translate the word with `[no response]` or something similar.)
 
 If you want to be able to tell apart different reasons for missing data
 (such as data loss, programming errors, participants' refusal to answer a certain
@@ -308,7 +311,7 @@ own `data` directory and the R script in your own `functions` directory.
 
 You've now set up an R project for this pair of lectures.
 R projects aren't strictly necessary, but I find them helpful to manage different
-research projects, publications, classes I teach.
+research projects, publications, classes I teach, etc.
 
 ### Loading the packages
 
@@ -866,7 +869,7 @@ skills |>
 ```
 We set the `na.rm` parameter in the `mean()` call to `TRUE` since there are several
 missing observations in both the `Narration` and `Argumentation` variable.
-If we didn't set `na.rm` to `TRUE`, the result of both computations would be `NA`.
+If we don't set `na.rm` to `TRUE`, the result of both computations would be `NA`.
 By setting `na.rm` to `TRUE`, missing observations are ignored.
 
 `summarise()` is often used in conjuction with `group_by()`, which splits up a 
@@ -993,8 +996,7 @@ skills_wider_language |>
   select(Subject, Class, Group) |> 
   sample_n(10)
 ```
-The examples/exercises will showcase some further applications of string
-manipulation, but I refer to the [stringr documentation](https://stringr.tidyverse.org/) 
+Refer to the [stringr documentation](https://stringr.tidyverse.org/) 
 for further guidance.
 
 We can now further break down the information contained in the new `Group` column,
@@ -1048,7 +1050,7 @@ The individual ratings are available in the file `helascot_ratings.csv`.
 Furthermore, we computed a bunch of lexical metrics for each text,
 such as the number of tokens, the mean corpus frequency of the words
 occurring in the text, etc.
-These metric are avilable in the file `helascot_metrics.csv`;
+These metrics are available in the file `helascot_metrics.csv`;
 see [Vanhove et al. (2019)](https://doi.org/10.17239/jowr-2019.10.03.04)
 and [Vanhove (2019)](https://osf.io/6bywg) for details.
 
@@ -1069,7 +1071,7 @@ metrics <- read_csv(here("data", "helascot_metrics.csv"))
 ratings <- read_csv(here("data", "helascot_ratings.csv"))
 ```
 
-Inspect the structure of these three datasets. (**How?**)
+Inspect the structure of these three datasets.
 Note that
 
 * `skills` contains one row per combination of `Subject`, `Time` and `LanguageTested`;
@@ -1191,5 +1193,5 @@ rating_gridscore |>
 ```
 
 
-## Suggestions for reading
+## Suggested reading
 The Bible for working with tibbles in R is Wickham et al.'s _R for Data Science_, which is freely available from [r4ds.hadley.nz](https://r4ds.hadley.nz/).

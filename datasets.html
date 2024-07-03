@@ -126,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#add-to-metrics" id="toc-add-to-metrics" class="nav-link" data-scroll-target="#add-to-metrics">Add to <code>metrics</code></a></li>
   <li><a href="#add-to-skills" id="toc-add-to-skills" class="nav-link" data-scroll-target="#add-to-skills">Add to <code>skills</code></a></li>
   </ul></li>
-  <li><a href="#suggestions-for-reading" id="toc-suggestions-for-reading" class="nav-link" data-scroll-target="#suggestions-for-reading">Suggestions for reading</a></li>
+  <li><a href="#suggested-reading" id="toc-suggested-reading" class="nav-link" data-scroll-target="#suggested-reading">Suggested reading</a></li>
   </ul>
 </nav>
 </div>
@@ -280,7 +280,7 @@ Use a codebook
 </section>
 <section id="label-missing-values-unambiguously" class="level3">
 <h3 class="anchored" data-anchor-id="label-missing-values-unambiguously">Label missing values unambiguously</h3>
-<p>In <a href="#fig-long-data">Figure&nbsp;3</a>, I left some of the translation cells empty. From this, I can deduce that the word was presented to the participant but that he or she did not translate the word. However, it could have been possible that some participants were inadvertently never shown a particular word (e.g., due to a programming error) or that some of the participants’ were irretrievably lost. We should enable ourselves to distinguish between these cases, for instance by marking the latter cases using <code>NA</code> (<em>not available</em>).</p>
+<p>In <a href="#fig-long-data">Figure&nbsp;3</a>, I left some of the translation cells empty. From this, I can deduce that the word was presented to the participant but that he or she did not translate the word. However, it could have been possible that some participants were inadvertently never shown a particular word (e.g., due to a programming error) or that some of the participants’ were irretrievably lost. We should enable ourselves to distinguish between these cases, for instance by marking the latter cases using <code>NA</code> (<em>not available</em>). (Alternatively, we could explicitly label cases where the participant did not translate the word with <code>[no response]</code> or something similar.)</p>
 <p>If you want to be able to tell apart different reasons for missing data (such as data loss, programming errors, participants’ refusal to answer a certain question, participants’ being absent from a data collection etc.), it’s probably easiest to just write <code>NA</code> in the column and add another column with comments detailing the reasons for the missingness.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -382,7 +382,7 @@ Use data validation
 <p>When you’re done, close RStudio. Navigate to the directory you’ve just created. You should find an <code>.Rproj</code> file there. Double-click it. If all is well, RStudio should fire up.</p>
 <p>Create the following subdirectories in the directory you’re currently in: <code>data</code>, <code>scripts</code> and <code>figs</code>.</p>
 <p>On <a href="https://github.com/janhove/DatasetsAndGraphs">github.com/janhove/DatasetsAndGraphs</a>, you can find a couple of datasets (under <code>data</code>) as well as an R script that defines a new function we’ll use (under <code>functions</code>). Put the datasets in your own <code>data</code> directory and the R script in your own <code>functions</code> directory.</p>
-<p>You’ve now set up an R project for this pair of lectures. R projects aren’t strictly necessary, but I find them helpful to manage different research projects, publications, classes I teach.</p>
+<p>You’ve now set up an R project for this pair of lectures. R projects aren’t strictly necessary, but I find them helpful to manage different research projects, publications, classes I teach, etc.</p>
 </section>
 <section id="loading-the-packages" class="level3">
 <h3 class="anchored" data-anchor-id="loading-the-packages">Loading the packages</h3>
@@ -1229,7 +1229,7 @@ dbl (4): Time, Reading, Argumentation, Narration
 </div>
 </div>
 </div>
-<p>We set the <code>na.rm</code> parameter in the <code>mean()</code> call to <code>TRUE</code> since there are several missing observations in both the <code>Narration</code> and <code>Argumentation</code> variable. If we didn’t set <code>na.rm</code> to <code>TRUE</code>, the result of both computations would be <code>NA</code>. By setting <code>na.rm</code> to <code>TRUE</code>, missing observations are ignored.</p>
+<p>We set the <code>na.rm</code> parameter in the <code>mean()</code> call to <code>TRUE</code> since there are several missing observations in both the <code>Narration</code> and <code>Argumentation</code> variable. If we don’t set <code>na.rm</code> to <code>TRUE</code>, the result of both computations would be <code>NA</code>. By setting <code>na.rm</code> to <code>TRUE</code>, missing observations are ignored.</p>
 <p><code>summarise()</code> is often used in conjuction with <code>group_by()</code>, which splits up a tibble into subgroups. This way, we can straightforwardly compute summaries for different subgroups. For instance, if we wanted to compute the mean narration and argumentation scores for each time of data collection and each language tested, we could use the following code snippet:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>skills <span class="sc">|&gt;</span> </span>
@@ -1361,7 +1361,7 @@ Writing your own functions
 </div>
 </div>
 </div>
-<p>The examples/exercises will showcase some further applications of string manipulation, but I refer to the <a href="https://stringr.tidyverse.org/">stringr documentation</a> for further guidance.</p>
+<p>Refer to the <a href="https://stringr.tidyverse.org/">stringr documentation</a> for further guidance.</p>
 <p>We can now further break down the information contained in the new <code>Group</code> column, for instance as follows:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>skills_wider_language <span class="ot">&lt;-</span> skills_wider_language <span class="sc">|&gt;</span> </span>
@@ -1406,7 +1406,7 @@ Writing your own functions
 </section>
 <section id="a-full-fledged-example" class="level2">
 <h2 class="anchored" data-anchor-id="a-full-fledged-example">A full-fledged example</h2>
-<p>We had the children in the French/German/Portuguese project write short narrative and argumentative texts in each of their languages at three points in time. The quality of these texts was scored using a grid (<a href="https://doi.org/10.21832/9781783099054-006">Desgrippes et al.&nbsp;2017</a>); it is these scores that are listed in the <code>skills</code> tibble we worked with above. In addition, 3,060 of these texts were rated for their lexical richness by between two and eighteen naïve (i.e., non-instructed) raters each using a 1-to-9 scale. The individual ratings are available in the file <code>helascot_ratings.csv</code>. Furthermore, we computed a bunch of lexical metrics for each text, such as the number of tokens, the mean corpus frequency of the words occurring in the text, etc. These metric are avilable in the file <code>helascot_metrics.csv</code>; see <a href="https://doi.org/10.17239/jowr-2019.10.03.04">Vanhove et al.&nbsp;(2019)</a> and <a href="https://osf.io/6bywg">Vanhove (2019)</a> for details.</p>
+<p>We had the children in the French/German/Portuguese project write short narrative and argumentative texts in each of their languages at three points in time. The quality of these texts was scored using a grid (<a href="https://doi.org/10.21832/9781783099054-006">Desgrippes et al.&nbsp;2017</a>); it is these scores that are listed in the <code>skills</code> tibble we worked with above. In addition, 3,060 of these texts were rated for their lexical richness by between two and eighteen naïve (i.e., non-instructed) raters each using a 1-to-9 scale. The individual ratings are available in the file <code>helascot_ratings.csv</code>. Furthermore, we computed a bunch of lexical metrics for each text, such as the number of tokens, the mean corpus frequency of the words occurring in the text, etc. These metrics are available in the file <code>helascot_metrics.csv</code>; see <a href="https://doi.org/10.17239/jowr-2019.10.03.04">Vanhove et al.&nbsp;(2019)</a> and <a href="https://osf.io/6bywg">Vanhove (2019)</a> for details.</p>
 <p>We’ll use these datasets to answer three questions:</p>
 <ul>
 <li>What’s the relation between the average lexical richness ratings per text and the text’s Guiraud index? (The Guiraud index is the ratio of the number of types in a text and the square root of the number of tokens in that text.)</li>
@@ -1453,7 +1453,7 @@ lgl  (1): Rater_NativeLanguageOther
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
-<p>Inspect the structure of these three datasets. (<strong>How?</strong>) Note that</p>
+<p>Inspect the structure of these three datasets. Note that</p>
 <ul>
 <li><code>skills</code> contains one row per combination of <code>Subject</code>, <code>Time</code> and <code>LanguageTested</code>;</li>
 <li><code>metrics</code> contains one row per text, i.e., one row per combination of <code>Subject</code>, <code>Text_Language</code>, <code>Text_Type</code> and <code>Time</code>;</li>
@@ -1533,7 +1533,7 @@ mono-Portuguese
 <span id="cb90-6"><a href="#cb90-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Guiraud value"</span>) <span class="sc">+</span></span>
 <span id="cb90-7"><a href="#cb90-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"average lexical richness rating"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="datasets_files/figure-html/unnamed-chunk-60-1.png" class="img-fluid" width="672"></p>
+<p><img src="datasets_files/figure-html/unnamed-chunk-60-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Similarly, for <code>meanSUBTLEX</code> (average corpus frequency):</p>
@@ -1546,7 +1546,7 @@ mono-Portuguese
 <span id="cb91-6"><a href="#cb91-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"mean SUBTLEX frequency"</span>) <span class="sc">+</span></span>
 <span id="cb91-7"><a href="#cb91-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"average lexical richness rating"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="datasets_files/figure-html/unnamed-chunk-61-1.png" class="img-fluid" width="672"></p>
+<p><img src="datasets_files/figure-html/unnamed-chunk-61-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <div class="cell">
@@ -1594,7 +1594,7 @@ using the `.groups` argument.</code></pre>
 <span id="cb96-6"><a href="#cb96-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(Time, Text_Type),</span>
 <span id="cb96-7"><a href="#cb96-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">cols =</span> <span class="fu">vars</span>(LanguageTested))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="datasets_files/figure-html/unnamed-chunk-64-1.png" class="img-fluid" width="672"></p>
+<p><img src="datasets_files/figure-html/unnamed-chunk-64-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <div class="cell">
@@ -1617,8 +1617,8 @@ using the `.groups` argument.</code></pre>
 </div>
 </section>
 </section>
-<section id="suggestions-for-reading" class="level2">
-<h2 class="anchored" data-anchor-id="suggestions-for-reading">Suggestions for reading</h2>
+<section id="suggested-reading" class="level2">
+<h2 class="anchored" data-anchor-id="suggested-reading">Suggested reading</h2>
 <p>The Bible for working with tibbles in R is Wickham et al.’s <em>R for Data Science</em>, which is freely available from <a href="https://r4ds.hadley.nz/">r4ds.hadley.nz</a>.</p>
 </section>
 
