@@ -233,7 +233,7 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-3-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Alternatively, you can use the pipe (<code>|&gt;</code>) to pass the tibble to the <code>ggplot()</code> function. This is merely a matter of personal preference.</p>
@@ -261,25 +261,25 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="fl">0.2</span>) <span class="co"># binwidth of 0.2 points</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-5-1.svg" class="img-fluid"></p>
 </div>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d_hist,</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="fl">0.1</span>) <span class="co"># binwidth of 0.1 points</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-5-2.svg" class="img-fluid"></p>
 </div>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d_hist,</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="fl">0.05</span>) <span class="co"># binwidth of 0.05 points</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-5-3.svg" class="img-fluid"></p>
 </div>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d_hist,</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">30</span>) <span class="co"># binwidth of 1/30 points</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-5-4.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-5-4.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>There aren’t any hard and fast rules for determining the optimal bin width. The default settings (1st plot) produce a histogram that seems to be a bit too fine-grained, whereas a bin width of 0.2 (2nd plot) results in too coarse a histogram. The other three histograms seem fine by me; I’d probably pick the 4th or 5th for a presentation or when writing a paper.</p>
@@ -289,13 +289,13 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">10</span>) <span class="co"># use 10 bins</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-6-1.svg" class="img-fluid"></p>
 </div>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> d_hist,</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Englisch)) <span class="sc">+</span></span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fl">0.45</span>, <span class="fl">0.9</span>, <span class="fl">0.05</span>)) <span class="co"># define break boundaries manually</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-6-2.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-6-2.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Incidentally, the intervals are, by default, open to the left and closed to the right. That is, if we have bins (0.6, 0.7] and (0.7, 0.8], the value 0.7 is counted in the bin (0.6, 0.7] and not in (0.7, 0.8].</p>
@@ -308,7 +308,7 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"English vocabulary score"</span>) <span class="sc">+</span></span>
 <span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Number of participants"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-7-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Important:</p>
@@ -335,7 +335,7 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"English vocabulary scores were obtained using the LexTALE test."</span></span>
 <span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-9-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>I don’t really like the default colours, but we can easily override those:</p>
@@ -353,7 +353,7 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">caption =</span> <span class="st">"English vocabulary scores were obtained using the LexTALE test."</span></span>
 <span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-10-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>You can also apply one of the <code>ggplot2</code> themes, see the <a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">ggplot2 documentation</a>. For instance,</p>
@@ -372,7 +372,7 @@ dbl (5): VPN, Wortschatz, Englisch, Französisch, Alter
 <span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
 <span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-11-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -410,7 +410,7 @@ Saving figures
 <span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span>
 <span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a><span class="fu">dev.off</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>png 
+<pre><code>svg 
   2 </code></pre>
 </div>
 </div>
@@ -428,7 +428,7 @@ Saving figures
 <span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"English vocabulary score"</span>) <span class="sc">+</span></span>
 <span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"density"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-14-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>We can verify that <span class="math display">\[0.05 \times (0.5 + 1.5 + 5 + 4.5 + 3.5 + 2.75 + 1.5 + 0.75) = 1.\]</span></p>
@@ -458,7 +458,7 @@ dbl (1): PropCorrect
 <p>From the boxplot below, we can glean that the IQR is <span class="math inline">\(34 - 31 = 3\)</span>. The highest data point has a value of 38. Since <span class="math inline">\(38 &lt; 34 + 1.5 \times 3 = 38.5\)</span>, this data point is captured by the line protruding from the upper part of the box. The lowest data point has a value of 25. Since <span class="math inline">\(25 &lt; 31 - 1.5 \times 3 = 26.5\)</span>, it lies too far from the box to be captured by the line protruding from the lower part of the box, so it gets drawn separately.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-16-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>We can draw boxplots in order to compare the distribution of a variable in two groups. But you can also use boxplots to compare more than two groups.</p>
@@ -472,7 +472,7 @@ dbl (1): PropCorrect
 <span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Proportion of correct translations"</span>) <span class="sc">+</span></span>
 <span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-17-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Plain boxplots are useful when you want to get a quick idea of the distribution of the data in different groups. However, identically looking boxplots can <a href="http://goo.gl/v4vYvx">represent</a> markedly different distributions! For this reason, it can be useful to draw boxplots that also show the <em>individual</em> data points rather than merely the distribution’s quartiles. Such visualisations are particularly useful when the dataset isn’t prohibitively large, so that you can actually make out the different data points.</p>
@@ -486,7 +486,7 @@ dbl (1): PropCorrect
 <span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Proportion correct answers"</span>) <span class="sc">+</span></span>
 <span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()      </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-18-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>If you count the number of points in the graph above, you’ll notice that there are much fewer points (28) than there were participants (80). The reason is that several participants obtained the same result, and their data are plotted on top of each other. For this reason, it makes sense to move the plotted points a bit apart (<em>jittering</em>). Here we can move the points apart horizontally. To do this, we need to specify the <code>position</code> parameter inside the <code>geom_point()</code> command.</p>
@@ -505,13 +505,13 @@ dbl (1): PropCorrect
 <span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Proportion correct answers"</span>) <span class="sc">+</span></span>
 <span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-19-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-19-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>To make the individual data points more visually distinct, we can change the plotting symbol by changing the <code>shape</code> parameter. This overview shows which plotting symbols are available:</p>
 <div class="cell" data-fig.asp="0.25">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-20-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Empty circles tend to work well (shape 1):</p>
@@ -527,7 +527,7 @@ dbl (1): PropCorrect
 <span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Proportion correct answers"</span>) <span class="sc">+</span></span>
 <span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>(<span class="dv">12</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-21-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Shapes 21 through 25 resemble shapes 1 through 5, but they can be coloured in.</p>
@@ -571,10 +571,10 @@ dbl (4): Grade, Learners, Mean, StDev
 <span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span> <span class="co"># connect data points with a line</span></span>
 <span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>()  <span class="co"># add data points as points for good measure</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-23-1.svg" class="img-fluid"></p>
 </div>
 </div>
-<p>What’s new in the R code is that you can specify more than just an <code>x</code> and a <code>y</code> parameter in the <code>aes()</code> call. When you associate <code>colour</code> and <code>linetype</code> with variables in the dataset, the data associated with different levels of these variables (i.e., English vs.&nbsp;Spanish; TBE vs.&nbsp;EI) will be plotted in a different colour or using a different line type. The colours and line types used here are ggplot’s default choices; we could override those, but that’ll be for later. The same goes for the appearance of the legends.</p>
+<p>What’s new in the R code is that you can specify more than just an <code>x</code> and a <code>y</code> parameter in the <code>aes()</code> call. When you associate <code>colour</code> and <code>linetype</code> with variables in the dataset, the data associated with different levels of these variables (i.e., English vs.&nbsp;Spanish; TBE vs.&nbsp;EI) will be plotted in a different colour or using a different line type. The colours and line types used here are ggplot’s default choices; we could override those, see <code>?scale_colour_manual</code> and <code>?scale_linetype_manual</code>. The same goes for the appearance of the legends.</p>
 <p>Using different colours and line types is all good and well if you have a limited number of variables and a small number of levels per variable. But for more complex data, such graphs quickly become confusing. One useful technique is to plot different lines in separate graphs (<em>small multiples</em>) and show the different graphs side-by-side. This is known as <strong>facetting</strong>. The command <code>facet_grid()</code> can be used to specify the variables according to which the graph should be separated and how. Since the information regarding <code>Language</code> and <code>CourseType</code> is expressed in the facets, we don’t have to express it using colours and linetypes any more. (But feel free to do so if you think it makes things clearer!) We need to quote the names of the variables according to which the facets are to be drawn in a <code>vars()</code> call.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(<span class="at">data =</span> slavin,</span>
@@ -585,7 +585,7 @@ dbl (4): Grade, Learners, Mean, StDev
 <span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">rows =</span> <span class="fu">vars</span>(CourseType), <span class="co"># TBE vs. EI in rows; </span></span>
 <span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">cols =</span> <span class="fu">vars</span>(Language))   <span class="co"># Span. vs. Eng. in columns</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-24-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Or you can combine facetting with using different colours or line types. In the next plot, the data for different languages are shown in separate panels, but each panel shows the data for both the TBE and EI pupils. This is particularly useful if we want to highlight differences (or similarities) between the TBE and EI pupils. If instead we wanted to highlight differences or similarities in the development of the pupils’ language skills in Spanish and English, we’d draw this graph the other way round. In addition to connecting the means with a line, this graph also visualises the means using a symbol in order to highlight that there were four discrete measurement times (i.e., no measurements between Grades 1 and 2).</p>
@@ -599,7 +599,7 @@ dbl (4): Grade, Learners, Mean, StDev
 <span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
 <span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(<span class="at">cols =</span> <span class="fu">vars</span>(Language)) <span class="co"># only split graph by column (Sp. vs. Eng.)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-25-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <div class="callout callout-style-default callout-warning callout-titled">
@@ -616,19 +616,19 @@ Averages don’t tell the whole story
 <p>Consider the following example. You’re reading a study in which 39 participants answer a question on a scale from 0 to 5. The study reports that the average response was 2.43 on this 6-point scale. You would be forgiven for assuming that most participants answered ‘2’ or ‘3’. But this doesn’t have to be the case: the three graphs below all show 39 data points whose mean is 2.43 (after rounding). But we’d interpret the left graph (only extreme choices) differently from the middle graph (whole range of opinions) and from the right graph (only moderate responses).</p>
 <div class="cell" data-fig.asp="0.4">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-26-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>If the reported results include a measure of dispersion (e.g., a standard deviation), the number of possible data patterns is reduced, but there could nonetheless be a <strong>multitude of patterns</strong> that give rise to the same numerical summaries but that <strong>may have to be interpreted differently</strong>:</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-27-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>A related reason for graphing the data is to make sure that the numerical results reported are actually <strong>relevant</strong>. For instance, a study may report a difference in the mean outcomes of two groups and illustrate this with the left panel in the figure below. But if we look at the distribution of the raw data in both groups, shown in the right panel, we realise that there is a strong right skew to these data. This would prompt us to at least ask ourselves the question whether we’re at all interested in the <em>means</em> of these groups.</p>
 <div class="cell" data-fig.asp="0.4">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-28-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>For further discussion, see the blog post <a href="https://janhove.github.io/posts/2019-04-11-assumptions-relevance/"><em>Before worrying about model assumptions, think about model relevance</em></a> as well as the article <a href="https://doi.org/10.1075/itl.20010.van"><em>Towards simpler and more transparent quantitative research reports</em></a> <a href="https://doc.rero.ch/record/328689">[preprint]</a>.</p>
@@ -700,7 +700,7 @@ dbl (4): Time, Reading, Argumentation, Narration
 <span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Test score"</span>) <span class="sc">+</span></span>
 <span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-30-1.svg" class="img-fluid"></p>
 </div>
 </div>
 </section>
@@ -709,7 +709,7 @@ dbl (4): Time, Reading, Argumentation, Narration
 <p>The three graphs below all show the same data (the proportion of sales of a fictitious pie producer by pie taste).</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="1152"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-31-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>The graph on the left is a traditional <strong>pie chart</strong>. Though common, this type of graph has serious shortcomings, for which reason it should rarely be used:</p>
@@ -720,7 +720,7 @@ dbl (4): Time, Reading, Argumentation, Narration
 <p>The graph in the middle is a <strong>bar chart</strong>, the one of the right a <strong>dot plot</strong>. Both are better choices than pie charts. For one things, they’re more flexible. For instance, you can add the sales from the year before to both graphs – as separate bars or by using different symbols. This would be difficult to accomplish in a pie chart:</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="960"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-32-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>I prefer dot plots because it’s easier to visualise a large number of categories and I find them less ‘busy’.</p>
@@ -775,7 +775,7 @@ dbl (1): NeuterResponses
 <span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">shape =</span> Country)) <span class="sc">+</span> </span>
 <span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-34-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>The plot above doesn’t offer an answer to the research question since the difference between stimuli with different Dutch genders isn’t highlighted. To accomplish this, we can plot stimuli with neuter cognates and those with common-gender cognates in different boxes (<em>facetting</em>, see the tutorial on line charts). (To see what <code>scales = "free_y"</code> and <code>space = "free_y"</code> accomplish, leave these parameters out of the call, i.e., just use <code>facet_grid(rows = vars(DutchGender))</code>.)</p>
@@ -789,7 +789,7 @@ dbl (1): NeuterResponses
 <span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>             <span class="at">scales =</span> <span class="st">"free_y"</span>,</span>
 <span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">space =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-35-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>This graph shows pretty clearly that both Belgian and Dutch speakers of Dutch pick <em>das</em> more often if the German word has a neuter-gender cognate than when it has a common-gender cognate: The points in the lower box lie more to the right than those in the upper box. With a single exception (<em>Boot</em>), there is no overlap between these two distributions.</p>
@@ -809,7 +809,7 @@ dbl (1): NeuterResponses
 <span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Proportion 'das'"</span>) <span class="sc">+</span></span>
 <span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="fu">element_blank</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-36-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-36-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>The upper three boxes show feminine, masculine and neuter German words with common-gender cognates; the lower three boxes show feminine, masculine and neuter German words with neuter-gender cognates. The graph shows that the factor <em>Dutch gender</em> is the most important determinant of the participants’ article choices. But the factor <em>German gender</em> also plays a role: When a German word is neuter, both Belgian and Dutch people choose <em>das</em> more often than when it’s feminine or masculine.</p>
@@ -846,7 +846,7 @@ dbl (1): NeuterResponses
 <span id="cb46-25"><a href="#cb46-25" aria-hidden="true" tabindex="-1"></a>             <span class="at">space =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
 <span id="cb46-26"><a href="#cb46-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-37-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-37-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Hm. The facets with more ‘das’ responses are at the bottom of the graph, whereas within each facet, the words with more ‘das’ responses are at the top. We can fix this by setting the <code>decreasing</code> parameter in the <code>reorder()</code> function. We also put the legend at the bottom of the graph and slightly increase the size of the symbols:</p>
@@ -872,14 +872,14 @@ dbl (1): NeuterResponses
 <span id="cb47-19"><a href="#cb47-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
 <span id="cb47-20"><a href="#cb47-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"bottom"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-38-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>Not half bad, I think.</p>
 </section>
 <section id="suggested-reading" class="level3">
 <h3 class="anchored" data-anchor-id="suggested-reading">Suggested reading</h3>
-<p>As their name suggests, Cleveland dot plots were popularised by William S. Cleveland in his book <em>Visualizing data</em>. But if you want to learn more about this flexible visualisation tool, I suggest you check out Lukas Sönning’s <a href="https://doi.org/10.20378/irbo-51101">_The dot plot: A graphical tool for data analysis and presentation</a>, which is geared towards linguists.</p>
+<p>As their name suggests, Cleveland dot plots were popularised by William S. Cleveland in his book <em>Visualizing data</em>. But if you want to learn more about this flexible visualisation tool, I suggest you check out Lukas Sönning’s <a href="https://doi.org/10.20378/irbo-51101"><em>The dot plot: A graphical tool for data analysis and presentation</em></a>, which is geared towards linguists.</p>
 </section>
 </section>
 <section id="scatterplots" class="level2">
@@ -980,7 +980,7 @@ dbl (10): Subject, Trial, Correct, Age, NrLang, DS.Total, WST.Right, Raven.R...
 (`geom_point()`).</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-42-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>The warning concerns missing values in the <code>WST.Right</code> variable:</p>
@@ -1011,10 +1011,10 @@ No correlations without scatterplots!
 <p>By way of illustration, all of the plots in the first figure below show 30 observations of two variables with a sample correlation of <span class="math inline">\(r = 0.8\)</span>, whereas all of the plots in the second figure below show 60 observations of two variables with a sample correlation of <span class="math inline">\(r = 0\)</span>. For details, see the blog post <a href="https://janhove.github.io/posts/2016-11-21-what-correlations-look-like/index.html"><em>What data patterns can lie behind a correlation coefficient?</em></a> as well as the article <a href="https://doi.org/10.1075/itl.20010.van"><em>Towards simpler and more transparent quantitative research reports</em></a> <a href="https://doc.rero.ch/record/328689">[preprint]</a>.</p>
 <div class="cell" data-fig.asp="1">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-44-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-44-1.svg" class="img-fluid"></p>
 </div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-44-2.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-44-2.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>So, whenever you want to compute a correlation coefficient, <strong>draw a scatterplot first</strong>. And show it to your readers.</p>
@@ -1037,7 +1037,7 @@ No correlations without scatterplots!
 (`geom_point()`).</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-45-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>We can add scatterplot smoothers to these plots by means of <code>geom_smooth()</code>. Scatterplot smoothers were developed to discover relationships (including nonlinear ones) between two variables that aren’t necessarily immediately obvious if the data are shown in a scatterplot. Here I turn off the confidence band around the scatterplot smoother (<code>se = FALSE</code>) as confidence bands are a topic well beyond the scope of this primer.</p>
@@ -1062,7 +1062,7 @@ No correlations without scatterplots!
 (`geom_point()`).</code></pre>
 </div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-46-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-46-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>The points on the smoother are a kind of <strong>mean value of the <span class="math inline">\(Y\)</span> variable for the respective <span class="math inline">\(X\)</span> value</strong>. In the left panel, for instance, the average number of correct translations in the auditory mode for someone with an English test score of 30 is roughly 17–18, whereas the average number of correct translations for written words for participants with a score of 40 on the English test is about 25.</p>
@@ -1074,13 +1074,13 @@ No correlations without scatterplots!
 <p>To elaborate on the second point, consider the graph below, which shows a scatterplot of simulated data with two scatterplot smoothers. The <em>red</em> line was drawn with the default settings. This line doesn’t capture an important feature of the relationship (the data points go up and down). The <em>blue</em> line captures this trend much better. It was drawn using the command <code>geom_smooth(span = 0.1)</code>. The <code>span</code> parameter determines how wiggly the curve may be (the smaller <code>span</code>, the wigglier the curve). By default, span is set to 0.75. Finding a decent span value is matter of trial and error.</p>
 <div class="cell">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-47-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-47-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>In the second example, the <em>red</em> line was drawn using <code>geom_smooth(span = 0.1)</code>. This line is much too wiggly, and it essentially models random deviations from the general trend. The <em>blue</em> line, drawn with the default setting (<code>span = 0.75</code>), captures the general trend much more sensibly. The <em>green</em> line, by contrast, isn’t wiggly enough (<code>span = 3</code>).</p>
 <div class="cell" data-fig.asp="0.3">
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-48-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-48-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p><strong>Summing up:</strong> Generally, the default settings work reasonably well. But when you notice that visually salient patterns in the scatterplot aren’t captured by the trend line, you need to fiddle a bit with the <code>span</code> parameter.</p>
@@ -1136,7 +1136,7 @@ lgl  (1): Rater_NativeLanguageOther
 <span id="cb69-7"><a href="#cb69-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mean_rating, TTR, log2.nTokens) <span class="sc">|&gt;</span> </span>
 <span id="cb69-8"><a href="#cb69-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scatterplot_matrix</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"mean rating"</span>, <span class="st">"type/token ratio"</span>, <span class="st">"nr. tokens (log-2)"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<p><img src="graphs_files/figure-html/unnamed-chunk-50-1.png" class="img-fluid" width="672"></p>
+<p><img src="graphs_files/figure-html/unnamed-chunk-50-1.svg" class="img-fluid"></p>
 </div>
 </div>
 <p>On the main diagonal, we see a histogram for each variable as well as the number of data points that each histogram is based on. Here, we have <span class="math inline">\(n = 180\)</span> for all histograms. But if you have missing data for some variables, these numbers will vary.</p>
@@ -1164,7 +1164,7 @@ lgl  (1): Rater_NativeLanguageOther
  collate  English_United Kingdom.utf8
  ctype    English_United Kingdom.utf8
  tz       Europe/Zurich
- date     2024-06-24
+ date     2024-07-03
  pandoc   3.1.1 @ C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools/ (via rmarkdown)
 
 ─ Packages ───────────────────────────────────────────────────────────────────

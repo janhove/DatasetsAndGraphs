@@ -1,14 +1,15 @@
 ---
 title: "Visualising data in R: A primer"
 author: "Jan Vanhove"
-date: "28 June 2024"
+date: "Münster, 28 June 2024"
 format:
   html:
-    theme: yeti
+    theme: flatly
     toc: true
     number-sections: false
     code-line-numbers: false
     df-print: paged
+    fig-format: svg
 editor: source
 ---
 
@@ -523,7 +524,8 @@ in the dataset, the data associated with different levels
 of these variables (i.e., English vs. Spanish; TBE vs. EI)
 will be plotted in a different colour or using a different
 line type. The colours and line types used here are ggplot's
-default choices; we could override those, but that'll be for later. 
+default choices; we could override those, see
+`?scale_colour_manual` and `?scale_linetype_manual`.
 The same goes for the appearance of the legends.
 
 Using different colours and line types is all good and well
@@ -614,7 +616,7 @@ names(x) <- 0:5
 barplot(x, ylim = c(0, 40),
         xlab = "Response",
         ylab = "Number")
-title("All graphs: mean ≈ 2.43",
+title("All graphs: mean =~ 2.43",
       outer = TRUE)
 par(op)
 ```
@@ -670,7 +672,7 @@ barplot(x, ylim = c(0, 40),
         xlab = "Response",
         ylab = "Number")
 
-title("All graphs: mean ≈ 2.43, SD ≈ 1.05",
+title("All graphs: mean =~ 2.43, SD =~ 1.05",
       outer = TRUE)
 par(op)
 ```
@@ -1049,7 +1051,7 @@ Not half bad, I think.
 As their name suggests, Cleveland dot plots were popularised by
 William S. Cleveland in his book _Visualizing data_.
 But if you want to learn more about this flexible visualisation tool,
-I suggest you check out Lukas Sönning's [_The dot plot: A graphical tool for data analysis and presentation](https://doi.org/10.20378/irbo-51101),
+I suggest you check out Lukas Sönning's [_The dot plot: A graphical tool for data analysis and presentation_](https://doi.org/10.20378/irbo-51101),
 which is geared towards linguists.
 
 ## Scatterplots
