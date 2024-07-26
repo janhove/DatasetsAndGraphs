@@ -10,6 +10,7 @@ format:
     code-line-numbers: false
     df-print: paged
     fig-format: svg
+    self-contained: true
 editor: source
 ---
 
