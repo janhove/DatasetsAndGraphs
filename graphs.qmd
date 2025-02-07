@@ -1,12 +1,12 @@
 ---
 title: "Visualising data in R: A primer"
 author: "Jan Vanhove"
-date: "Münster, 28 June 2024"
+date: "Fribourg, 14 March 2025"
 format:
   html:
     theme: flatly
     toc: true
-    number-sections: false
+    number-sections: true
     code-line-numbers: false
     df-print: paged
     fig-format: svg
@@ -14,7 +14,7 @@ format:
 editor: source
 ---
 
-## Goal
+# Goal
 The goal of this primer is to present the techniques for visualising
 research data that I have found to be most useful and to show to you
 how you can use R, and specifically the `ggplot2/tidyverse` package,
@@ -39,8 +39,8 @@ as you're trying to fix the errors, you'll lose track of the lecture.
 So work through the code snippets at home, and be patient with yourselves.
 :::
 
-## Preliminaries
-### Required packages
+# Preliminaries
+## Required packages
 We'll need the `here` and `tidyverse` packages; install these packages if you
 don't have them already.
 
@@ -68,7 +68,7 @@ you can find a couple of datasets (under `data`) as well as an R script
 that defines a new function we'll use (under `functions`). Put the datasets in your
 own `data` directory and the R script in your own `functions` directory.
 
-### Loading the packages
+## Loading the packages
 Load the `here` and `tidyverse` packages.
 
 ```{r}
@@ -77,7 +77,7 @@ library(tidyverse)
 ```
 
 
-## Introduction: Histograms
+# Introduction: Histograms
 The file `Vanhove2015_Vpn.csv` contains a couple of pieces of information 
 about the participants in an [experiment](https://doi.org/10.1177/13670069155733) 
 that I conducted several years ago: 
@@ -107,7 +107,7 @@ there are any 'univariate' outliers (i.e., values that lie far from the bulk of 
 Since you've already loaded the `tidyverse` and since you've already read in the data, we can start to draw some histograms.
 To this end, we need to define the object and the variables we want to plot (lines 1--2). 
 If we only executed the first two lines of the code below, all we'd see is a blank canvas.
-To draw the histogram itself, we need to add a _layer_ to this blank canvas that
+To draw the histogram itself, we need to add a **layer** to this blank canvas that
 contains a histogram based on these pieces of information.
 
 ```{r}
@@ -166,6 +166,8 @@ ggplot(data = d_hist,
        aes(x = Englisch)) +
   geom_histogram(breaks = seq(0.45, 0.9, 0.05)) # define break boundaries manually
 ```
+
+The bins don't need to all be of the same size, but they usually are.
 
 Incidentally, the intervals are, by default, open to the left
 and closed to the right. That is, if we have bins (0.6, 0.7] and (0.7, 0.8], 
@@ -255,7 +257,9 @@ as well. You can also specify the dimensions and other details, see
 ggsave(here("figs", "histogram_english.png"))
 ```
 
-Alternatively, we can save the figure like so:
+Alternatively, we can save the figure by enclosing the code
+to draw it between a call to `pdf()`, `png()` or a couple of
+other options, and one to `dev.off()`, like so:
 ```{r}
 pdf(here("figs", "histogram_english.pdf"))
 ggplot(data = d_hist,
@@ -281,7 +285,7 @@ In order to faciliate comparisons of different histograms
 (e.g., histograms for different subsets of the data, or histograms
 of the same data but using different bin widths), what's often plotted
 along the y-axis isn't the _number_ of data points in each interval,
-but a _density estimate_. To this end, the y-axis is scaled in such a way
+but a **density estimate**. To this end, the y-axis is scaled in such a way
 that the total _area_ covered by the histogram is equal to 1.
 Use `y = after_stat(density)` to plot density estimates rather than counts:
 
@@ -299,20 +303,67 @@ ggplot(data = d_hist,
 We can verify that
 $$0.05 \times (0.5 + 1.5 + 5 + 4.5 + 3.5 + 2.75 + 1.5 + 0.75) = 1.$$
 
-Note that if we were to express the English vocabulary scores on a scale
+If we were to express the English vocabulary scores on a scale
 from 0 to 10 rather than from 0 to 1 and use bins of width 0.5 points
 rather than of width 0.05 points, the density estimates would be a tenth
-of what they are now.
+of what they are now. This is because the area covered by the histogram
+needs to equal 1.
 
-### Exercise
+::: {#exr-histogram}
+## A histogram
 Draw a suitable histogram for the `Französisch` variable as well as for the 
 `Wortschatz` variable in the `d_hist` dataset. 
 This will require you to tinker with the `binwidth` setting. 
 Don't forget to adjust the axis labels. 
 Use `ggsave()` to save your preferred histogram for each of the two variables
 as an SVG file.
+:::
 
-## Boxplots
+# Density plots
+
+# Empirical cumulative density plots
+```{r}
+d_hist |> 
+  ggplot(aes(x = Wortschatz)) +
+  stat_ecdf() +
+  xlab("Wortschatz") +
+  ylab("Empirical cumulative probability")
+```
+
+```{r}
+d_hist |> 
+  ggplot(aes(x = Wortschatz)) +
+  stat_ecdf() +
+  stat_function(fun = pnorm, 
+                args = list(mean = mean(d_hist$Wortschatz),
+                      sd = sd(d_hist$Wortschatz)),
+                linetype = "dashed") +
+  xlab("Wortschatz") +
+  ylab("Empirical cumulative probability")
+```
+
+# Quantile--quantile plots
+```{r}
+d_hist |> 
+  ggplot(aes(sample = Wortschatz)) +
+  geom_qq(shape = 1) +
+  geom_qq_line() +
+  xlab("Standard normal quantiles") +
+  ylab("Empirical quantiles of Wortschatz")
+```
+
+```{r}
+d_hist |> 
+  ggplot(aes(sample = Wortschatz)) +
+  geom_qq(shape = 1,
+          distribution = stats::qunif) +
+  geom_qq_line(distribution = stats::qunif) +
+  xlab("Quantiles of Unif([0,1])") +
+  ylab("Empirical quantiles of Wortschatz")
+```
+
+
+# Boxplots
 The file `VowelChoices_ij.csv`
 contains a part of the results
 of a learning [experiment](https://doi.org/10.1177/13670069155733) 
@@ -481,7 +532,7 @@ Also draw boxplots (with individual data points) on the basis of which this rese
 can be answered. Label your axes appropriately. Save a graph you're happy with
 using `ggsave()`.
 
-## Line charts
+# Line charts
 Line charts are a reasonable choice for presenting
 the results of more complex studies. They're often
 used to depict temporal developments, but I don't
@@ -745,7 +796,7 @@ a sense of how the actual data are distributed.
 :::
 
 
-## Putting it all together: Portuguese reading and writing skills
+# Putting it all together: Portuguese reading and writing skills
 
 I'll walk you through this example in the lecture.
 
@@ -802,7 +853,7 @@ ggplot(skills_longer_portuguese |>
   theme_bw()
 ```
 
-## Cleveland dot plots
+# Cleveland dot plots
 
 The three graphs below all show the same data
 (the proportion of sales of a fictitious pie producer by pie taste).
@@ -872,7 +923,7 @@ If you prefer bar charts: It's usually better to plot the bars _next_ to each ot
 ## Don't use pie charts
 :::
 
-### A basic Cleveland dot plot
+## A basic Cleveland dot plot
 For this tutorial, 
 we'll use data from [Vanhove (2017)](https://doi.org/10.1111/lang.12230).
 For this study, I recruited 175 native speakers of Dutch
@@ -951,7 +1002,7 @@ For instance, we don't observe that most triangles lie to the
 right of the circles or that Belgian participants prefer _das_ for _Wurst_
 and Dutch participants don't.
 
-### Finishing touches
+## Finishing touches
 The previous graph is good enough. But we can do better still.
 German is taught in school in both Flanders and the Netherlands,
 and at least some participants will have known which words are
@@ -1048,14 +1099,14 @@ ggplot(d_dot,
 
 Not half bad, I think.
 
-### Suggested reading
+## Suggested reading
 As their name suggests, Cleveland dot plots were popularised by
 William S. Cleveland in his book _Visualizing data_.
 But if you want to learn more about this flexible visualisation tool,
 I suggest you check out Lukas Sönning's [_The dot plot: A graphical tool for data analysis and presentation_](https://doi.org/10.20378/irbo-51101),
 which is geared towards linguists.
 
-## Scatterplots
+# Scatterplots
 For my PhD thesis ([Vanhove 2014](https://folia.unifr.ch/unifr/documents/303552)),
 I investigated how people's ability to
 recognise written and spoken cognates in a related but
@@ -1275,7 +1326,21 @@ you need to fiddle a bit with the `span` parameter.
 More generally, data analysis and statistics aren't a matter of
 blindly applying formulae and recipes.
 
-## Scatterplot matrices
+::: {.panel-tabset}
+
+## Linear regression
+
+Pick $a, b$ such that $\sum_{i=1}^n (y_i - a - bx_i)^2$ is minimal.
+
+## Robust linear regression
+
+## LOWESS
+
+## GAM
+
+:::
+
+# Scatterplot matrices
 Scatterplot matrices are useful for showing the bivariate relationships
 among multiple variables. I usually use a custom function, `scatterplot_matrix()`,
 to plot such scatterplot matrices. To use this function, load the `scatterplot_matrix.R`
@@ -1339,7 +1404,7 @@ then the original value is $2^6 = 64$.
 An alternative to `scatterplot_matrix()` is the `ggpairs()` function
 from the `GGally` package.
 
-## Suggested reading
+# Suggested reading
 Kieran Healy's _Data visualization: A practical introduction_ does a stirling
 job at explaining the _why_ and the _how_ of drawing graphs using `R` 
 and the `tidyverse`.
@@ -1347,9 +1412,9 @@ In addition to the material covered in this lecture, Healy covers drawing
 maps and drawing visualisations of statistical models.
 The entire book is freely available from [socviz.co](https://socviz.co/).
 
-## Software versions
+# Software versions
 
 ```{r}
-devtools::session_info()
+devtools::session_info(pkgs = "attached")
 ```
 

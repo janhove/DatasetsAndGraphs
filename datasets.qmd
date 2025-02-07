@@ -1,31 +1,32 @@
 ---
 title: "Working with datasets in R: A primer"
 author: "Jan Vanhove"
-date: "Münster, 28 June 2024"
+date: "28 February 2025"
 format:
   html:
     theme: flatly
     toc: true
-    number-sections: false
+    number-sections: true
     code-line-numbers: false
     df-print: paged
     fig-format: svg
     self-contained: true
 editor: source
+bibliography: bibliography.bib
 ---
 
 ```{r, echo = FALSE}
 set.seed(2024-06-28)
 ```
 
-## Goal
+# Goal
 The goal of this primer is to furnish you with the basic tools and knowledge
 to organise, transform, and query datasets in research contexts.
 We'll work with [R](https://r-project.org) and more specifically with
 the [tidyverse](https://www.tidyverse.org/) add-on suite that markedly
 simplifies working with datasets.
 
-## Compiling and organising a dataset
+# Tips for organising datasets
 Let's say we've run a study in which speakers of German read a couple
 of words in Swedish and were asked to guess what these words might mean.
 An excerpt from the raw data might look like this, with the words having
@@ -59,7 +60,7 @@ been shown to the participants in the order in which they are listed:
 There are lots of ways in which we could represent these data in a spreadsheet.
 Let's look at a few rules of thumb.
   
-### Long datasets tend to be more practical than wide ones
+## Wide vs. long formats
 We'll concern ourselves strictly with **rectangular** datasets.
 These are datasets in which the information is laid out in rows and columns
 and in which all columns have the same length, and all rows have the same width.
@@ -92,8 +93,14 @@ in a long format.
 It's usually easier to work with data in a long-ish format compared to with
 data in a wide-ish format. Moreover, when you do need your data in a wide-ish
 format for data analysis, converting a longer dataset to a wider one is typically
-easier than vice versa. So **when in doubt** (and assuming you have a say in the matter
-at all), arrange your data in a **long-ish format**.
+easier than vice versa. 
+We will, of course, illustrate how you can effect such conversions.
+
+::: {.callout-tip}
+## When in doubt, arrange your data in a long-ish format
+
+Assuming you have any say in the matter, of course.
+:::
 
 Make sure that **all rows can be interpreted independently of one another**.
 What we want to avoid is that we can't make sense of the data in some row
@@ -125,11 +132,9 @@ not the ID of a `Versuchsperson`, and "30" is not a `Geschlecht`).
 
 ![Not like this! This dataset is not rectangular.](figs/datensatz_schlecht.png){#fig-long-data-schlecht}
 
-
-
-### Use short but descriptive variable names
-Make your life during the data analysis easier by using short but descriptive
-labels for variables or values in the spreadsheet.
+## Naming variables
+Make your life during the data analysis easier by using 
+**short but descriptive labels** for variables or values in the spreadsheet.
 By doing so, you avoid that you constantly need to look up in the project's codebook 
 what the labels mean, thereby reducing the likelihood that you'll make errors.
 Moreover, you save yourself some typing.
@@ -154,11 +159,11 @@ a codebook that spells out precisely what each variable in the dataset refers to
 [[Example of a codebook](https://osf.io/d9gnh)].
 :::
 
-### Label missing values unambiguously
+## Labelling missing values
 In @fig-long-data, I left some of the translation cells empty.
 From this, I can deduce that the word was presented to the participant
 but that he or she did not translate the word.
-However, it could have been possible that some participants were inadvertently 
+However, in other situations, it could be the case that some participants were inadvertently 
 never shown a particular word (e.g., due to a programming error)
 or that some of the participants' were irretrievably lost.
 We should enable ourselves to distinguish between these cases, 
@@ -179,7 +184,7 @@ The problem with this is that, sometimes, -99 or -9999 don't immediately stand
 out as conspicuous values.
 :::
 
-### Reduce redundancy by splitting up datasets
+## Using several smaller datasets
 The spreadsheet above contain several repeated pieces of information.
 For instance, for all five translations provided by participant 1034,
 we indicated that they were provided by a woman aged 51.
@@ -212,9 +217,9 @@ or to the words to this dataset from the other two datasets.
 
 ![The third dataset only contains the translations.](figs/uebersetzungen.png){#fig-translations}
 
-### Miscellaneous tips
+## Miscellaneous tips
 
-* Mind capitalisation. For some programs and computer languages, `Frau` and `frau`
+* Mind capitalisation. For some programs and computer languages (e.g., SQL), `Frau` and `frau`
 are the same value; for others (including R), they are not.
 * Mind trailing spaces. "Mann&nbsp;" (with trailing space) and "Mann" (without trailing space) are different values to a computer.
 * Special symbols, including the Umlaut, sometimes lead to problems, especially when collaborating with people whose localisation settings differ from yours.
@@ -248,7 +253,7 @@ erroneous data.
 Also see the blog post [_A data entry form with failsafes_](https://janhove.github.io/posts/2018-07-06-data-entry-failsafes/).
 :::
 
-## Working with R and RStudio
+# Working with R and RStudio
 With the data available in a rectangular spreadsheet format,
 the next challenge is to load them into a program capable of 
 analysing them. Several (free) options are available
@@ -257,7 +262,20 @@ with the `tidyverse` suite. The main reasons for this are that
 R is more popular in the humanities and the social sciences and that
 I'm just more proficient in R. Hadley Wickham lists some [further reasons](https://adv-r.hadley.nz/introduction.html#why-r).
 
-### R, RStudio, and the tidyverse
+::: {.callout-tip}
+## Use R _at home_
+Don't try to work with R as you're attending this class.
+Some things are bound to go wrong (perhaps a comma
+in the wrong spot, a missing bracket or an upper-case
+letter that should have been a lower-case one), and
+as you're trying to fix the errors, you'll lose track of the lecture.
+So work through the code snippets at home, and be patient with yourselves.
+I receive error messages or unexpected outcomes all the time -- it's just that
+after using R for 15 or so years, I've become reasonably proficient at spotting
+the problems and Googling solutions :)
+:::
+
+## R, RStudio, and the tidyverse
 To install R, visit the [R Project website](https://www.r-project.org).
 
 In addition, I recommend you install RStudio, which facilitates working
@@ -290,8 +308,7 @@ datasets enormously. You can install it like so:
 install.packages("tidyverse")
 ```
 
-
-### Setting up an R project
+## Setting up an R project
 Next, in RStudio, click on `File > New Project... > New Directory`. 
 Navigate to somewhere on your computer where you want to create a new directory
 and give this directory a name (for instance, `DatasetsAndGraphs`). You will use this
@@ -314,24 +331,7 @@ You've now set up an R project for this pair of lectures.
 R projects aren't strictly necessary, but I find them helpful to manage different
 research projects, publications, classes I teach, etc.
 
-### Loading the packages
-
-We'll work with the `here` and `tidyverse` packages below.
-Even if you've already installed these, you need to _load_ these packages
-in every R session in which you use them. To do so,
-execute the following lines:
-
-```{r}
-library(here)
-library(tidyverse)
-```
-
-Incidentally, you don't need to install these packages every time you need them,
-but you do need to load them every time you need them in a new session.
-I recommend including the packages you need at the top of your script.
-
-::: {.callout-tip}
-## Use scripts
+## Working with scripts
 With few exceptions, you should type the commands you want to execute in
 an R script (`File > New File > R Script`) rather than directly in the R console.
 While nothing terrible will happen if you do enter commands directly
@@ -345,11 +345,67 @@ that are internally closely connected but more or less independent of the other
 parts. For instance, I might have a script for cleaning the datasets,
 another script for the analyses that are reported in Chapter 4,
 and yet another script for the analyses reported in Chapter 5.
+
+::: {.callout-tip}
+## Templates and compiling scripts
+In the `templates` directory, you'll find two R files.
+`bare_script.R` illustrates how I lay-out fairly short scripts without
+any bells or whistles.
+`script_with_markdown.R` is more elaborate and combines snippets of R
+code with running text (including some mark-up such as headings and emphasis).
+
+R scripts can be compiled as HTML files (i.e., web pages) that show both
+the R commands as well as their output.
+This only works if all the code is syntactically correct and if its proper
+execution does not rely on objects that are not defined in the script.
+Compiling scripts is a great way to verify that your scripts are syntactically
+correct as well as self-contained. Try compiling the templates provided
+to check for yourself.
 :::
 
-## Reading in datasets
+::: {.callout-important}
+## Hand in your solutions as scripts
+Adopt one of the templates for your solutions to the exercises.
+Compile the R script as a HTML file.
+Check if the HTML file in fact shows the correct results.
+If not, this suggests that the results you'd originally obtained
+depend on some objects that are not defined in the script.
+Hand in both the R file as well as the HTML file.
+:::
 
-### Excel files
+
+
+## Loading the packages
+
+We'll work with the `here` and `tidyverse` packages below.
+Even if you've already installed these, you need to _load_ these packages
+in every R session in which you use them. To do so,
+execute the following lines:
+
+```{r}
+library(here)
+library(tidyverse)
+```
+
+The output of the `library(here)` command tells you the path relative to which
+the `here()` function in the `here` package will look for files etc.
+The messages generated by the `library(tidyverse)` command tell you 
+which of the packages that make up the tidyverse suite are loaded by default.
+Some of the functions in these packages have the same name as functions
+that are part of packages that are loaded automatically whenever you start up
+R. What this means is that, if you want to use, say, the `filter()` function
+from the `stats` package, you need to use the notation `stats::filter()`
+instead of just `filter()`.
+
+Incidentally, you don't need to install these packages every time you need them,
+but you do need to load them every time you need them in a new session.
+I recommend including the packages you need at the top of your script.
+
+
+
+# Reading in datasets
+
+## Excel files
 We'll focus on reading in two kinds of spreadsheets: Excel spreadsheets
 in the XLS(X) format, and CSV files.
 
@@ -380,17 +436,6 @@ translations
 You're going to take away much more from this primer
 if you copy the code snippets by _typing_ them rather
 than by copy-pasting them.
-That said, I strongly advise you to do so in your own
-time and not as you're attending the lecture:
-Some things are bound to go wrong (perhaps a comma
-in the wrong spot, a missing bracket or an upper-case
-letter that should have been a lower-case one), and
-as you're trying to fix the errors, you'll lose track of the lecture.
-
-So work through the code snippets at home, and be patient with yourselves.
-I receive error messages or unexpected outcomes all the time -- it's just that
-after using R for 15 or so years, I've become reasonably proficient at spotting
-the problems and Googling solutions :)
 :::
 
 ::: {.callout-note}
@@ -424,7 +469,18 @@ slice_sample(translations, n = 5)
 Again, for details, you can check the documentation of these functions that is available
 at `?slice_head`.
 
-### CSV files
+::: {#exr-readxl}
+
+## Excel files with multiple sheets
+The file `VanDenBroek2018.xlsx` contains the data from
+three experiments reported by @VanDenBroek2018.
+Using the `read_xlsx()` function, read in the data from the second experiment.
+
+Hint: Inspect the Excel file and then consult 
+the help page of `read_xlsx()` by means of `?read_xlsx`.
+:::
+
+## CSV files
 A popular format for storing spreadsheets is the CSV format.
 CSV is short for _comma-separated values_:
 Cells on the same row are separated by commas, see @fig-csv.
@@ -487,14 +543,20 @@ More seasoned R users are probably already familiar with the `read.csv()` functi
 them are negligible.
 :::
 
-### Other formats
+## Other formats
+Some people prefer to use tabs or spaces to separate cells rather than commas or semicolons.
+Consult the help page for the `read_tsv()` and `read_delim()` functions to see how you can read in 
+data using other separators. Particularly the `delim` and `quote` arguments are relevant.
+
 For reading in data from Google Sheets, see [googlesheets4](https://googlesheets4.tidyverse.org/).
 
 For interacting with Google Drive, see [googledrive](https://googledrive.tidyverse.org/).
 
 For reading in SPSS, Stata and SAS files, see [haven](https://haven.tidyverse.org/).
 
-## Joining datasets
+
+
+# Joining datasets
 Having read in our three datasets as `translations`, `participants`, and `items`,
 we want to merge these datasets into one large dataset. The most useful function
 for this is `left_join()`, which takes the dataset passed as its `x` argument
@@ -550,8 +612,10 @@ all_data <- translations |>
   left_join(items)
 ```
 
+::: {#exr-join}
 
-### Exercise: join functions
+## Join functions
+
 1. Use the following code to generate two tibbles called `left` and `right`:
 ```{r}
 left <- tibble(A = c("a", "b", "c", NA),
@@ -569,7 +633,7 @@ right_join(x = left, y = right)
 full_join(x = left, y = right)
 inner_join(x = left, y = right)
 semi_join(x = left, y = right)
-semi_join(x = recht, y = left) # !
+semi_join(x = right, y = left) # !
 anti_join(x = left, y = right)
 anti_join(x = right, y = left) # !
 ```
@@ -595,10 +659,11 @@ and only then check your answer.
 left_join(left, right)
 left_join(left, right, na_matches = "never")
 ```
+:::
 
-## Queries
+# Queries
 
-### Selecting by row number
+## Selecting by row number
 We can select the third row of a dataset like so:
 ```{r}
 slice(all_data, 3)
@@ -635,7 +700,7 @@ We can export this new object as a CSV file like so:
 write_csv(rows7_12, here("data", "rows7_12.csv"))
 ```
 
-### Selecting by values
+## Selecting by values
 Selecting rows by their number isn't too useful.
 But selecting rows satisfying some set of conditions is very useful.
 Here are a few examples:
@@ -699,7 +764,10 @@ all_data |>
   filter(xor(Position == 1, Richtig == 0)) 
 ```
 
-#### Exercise
+::: {#exr-filtering}
+
+## Filtering
+
 1. Run the following commands:
 ```{r}
 d1 <- all_data |> 
@@ -714,8 +782,9 @@ d2 <- all_data |>
 
 4. Create a tibble `d3` that contains only those rows in `all_data` where
 the participants did not translate the word as _vorsichtig_.
+:::
 
-### Selecting columns
+## Selecting columns
 Sometimes, a dataset is too cumbersome to handle because it contains a lot
 of irrelevant columns. Using `select`, we can select those columns that are of interest.
 For instance,
@@ -737,7 +806,10 @@ all_data |>
 ```
 See the [tidyselect documentation](https://tidyselect.r-lib.org/reference/language.html) for further functions.
 
-### Further examples
+
+
+
+## Further examples
 We can string together different types of commands:
 ```{r}
 # All translations for 'fiende'
@@ -759,14 +831,14 @@ distinct(select(filter(all_data, Wort == "behärska"), Übersetzung))
 
 
 
-## Pivoting
+# Pivoting
 In the course of an analysis, it is often necessary to convert a
 long-ish dataset to a wider one, and vice versa. This process is known
 as _pivoting_. To illustrate pivoting, we'll make use of a more realistic --
 and more complicated -- dataset derived from a longitudinal project on the
 development of reading and writing skills in Portuguese--French and
-Portuguese--German bilingual children ([Desgrippes et al. 2017](https://doi.org/10.21832/9781783099054-006), [Pestana et al. 2017](https://doi.org/10.21832/9781783099054-005)).
-
+Portuguese--German bilingual children 
+[@Lambelet_HELASCOT_writing;@Pestana_HELASCOT_reading].
 We read in the dataset `helascot_skills.csv` as `skills`:
 
 ```{r}
@@ -781,9 +853,9 @@ their progress on each task in each language from T1 to T2 and from T2 to T3.
 The way the data are laid out at present, this would at best be pretty difficult to do.
 But it would be easy if only the data were arranged differently, namely with
 all three measurements per participant and task next to each other.
-We can convert this dataset to the desired format in two steps.
+We can convert this dataset to the desired format in **two steps**.
 
-First, we make the dataset longer by stacking the different scores under each other
+First, we make the dataset **longer** by stacking the different scores underneath each other
 rather than next to each other. To this end, we use the function `pivot_longer()`
 and specify that we want to stack the values in the `Reading`, `Argumentation`, and `Narration` columns
 under each other, that we want to call the resulting column `Score`, 
@@ -796,7 +868,7 @@ skills_longer <- skills |>
 skills_longer
 ```
 
-Then, we make this tibble wider by putting the three measurements
+Then, we make this tibble **wider** by putting the three measurements
 per skill and language next to each other using `pivot_wider()`.
 We also prefix the `Time` values with a `T`.
 
@@ -815,6 +887,14 @@ skills_wider_time |>
          ProgressT2_T3 = T3 - T2) |> 
   select(Subject, LanguageTested, Skill, ProgressT1_T2, ProgressT2_T3)
 ```
+::: {.callout-tip}
+## First longer, then wider
+
+The two-step approach shown above is one that I've found generally useful.
+First convert the tibble to a format that is longer than needed,
+then pivot it to the wider format desired.
+:::
+
 Now imagine that we wanted to compute, for each participant in each skill at each data collection,
 the difference between the Portuguese score and the German/French score. The first step is the same,
 resulting in `skills_longer`. The second step is now similar, but we put the different
@@ -831,6 +911,12 @@ We can check this like so:
 skills_wider_language |> 
   slice_sample(n = 10)
 ```
+Or, indeed, like so:
+```{r}
+skills_wider_language |> 
+  filter(!is.na(German))
+```
+
 If we needed to, we could make this dataset wider still:
 ```{r}
 skills_wider_time_language <- skills_longer |> 
@@ -839,15 +925,11 @@ skills_wider_time_language <- skills_longer |>
 skills_wider_time_language
 ```
 We could reconvert this tibble to a long one using the code snippet below.
-The code becomes a bit more complex: The notation `French_1:German_3` selects
-all columns between `French_1` and `German_3` (including), whereas
-a so-called _regular expression_ (regex) is used to parse these column names
-into the `Language` bit and into the `Time` bit.
-For the present example, we don't need this code snippet since we already have
-`skills_longer`. But I wanted to illustrate that such conversions are _possible_.
-If you ever need to convert a similar dataset to a longer format, 
-you now know that you can look up the details on the help page of `pivot_longer()`
-(`?pivot_longer`) and take it from there:
+The code becomes a bit more complex.
+
+* The notation `French_1:German_3` selects all columns between `French_1` and `German_3` (including). Alternatively, we could have used `starts_with(c("French", "Portuguese", "German"))`
+to select the relevant columns.
+* A so-called [**regular expression**](https://regexr.com/) (regex) is used to split up these column names into the `Language` bit and into the `Time` bit. The split happens at the first underscore (`_`) encountered.
 
 ```{r}
 skills_wider_time_language |> 
@@ -856,10 +938,29 @@ skills_wider_time_language |>
                names_pattern = "(.*)_(.*)",
                values_to = "Score")
 ```
-Alternatively, we could have used `starts_with(c("French", "Portuguese", "German"))`
-to select the relevant columns.
 
-## Summaries
+For the present example, we don't need this code snippet since we already have
+`skills_longer`. But I wanted to illustrate that such conversions are _possible_.
+If you ever need to convert a similar dataset to a longer format, 
+you now know that you can look up the details on the help page of `pivot_longer()`
+(`?pivot_longer`) and take it from there.
+
+::: {.callout-tip}
+## About regex
+With regular expressions, 
+it's less important to know them than to know _about_ them. 
+Any time a string is comprised of several pieces of information in a more
+or less predictable way, 
+regular expressions can be used to extract these pieces.
+That said, compiling regular expressions that actually do the job is pretty difficult.
+But once you're aware that they exist and can be used to such ends,
+you can enlist the help of AI tools to construct them.
+
+Incidentally, the regex used above (`(.*)_(.*)`) matches any two groups of characters
+(`(.*)`) preceding and following an underscore (`_`).
+:::
+
+# Summaries
 Using the `summarise()` function, we can easily summarise large tibbles.
 For instance, we can compute the average (mean) narration and argumentation
 scores in the `skills` tibble like so:
@@ -937,15 +1038,22 @@ skills |>
 You can write your own functions. 
 For instance, an alternative to the mean and the median is
 the [Hodges--Lehmann estimator](https://en.wikipedia.org/wiki/Hodges%E2%80%93Lehmann_estimator).
-We can define a function that computes this estimator like so:
+Let $X = (X_1, \dots, X_n)$ be a data vector. To compute the Hodges--Lehmann estimator
+of $X$'s central tendency, proceed as follows:
 
+1. Compute the pairwise averages ('Walsh averages') of the $X$ values, that is, compute $\frac{X_i + X_j}{2}$
+   for each $i = 1, \dots, n-1$ and $j = i + 1, \dots, n$.
+
+2. Compute the median of these Walsh averages.
+
+We can define a function that computes this estimator like so:
 ```{r}
-hodges_lehmann <- function(x, na.rm = TRUE) {
+hodges_lehmann <- function(x, na.rm = FALSE) {
   if (na.rm) {
     x <- x[!is.na(x)]
   }
-  pairwise_means <- outer(x, x, FUN = "+") / 2
-  median(pairwise_means[upper.tri(pairwise_means, diag = TRUE)])
+  pairwise_means <- outer(x, x, FUN = "+") / 2 # computes *all* means of two observations
+  median(pairwise_means[upper.tri(pairwise_means, diag = TRUE)]) # median of means of x_i, x_j with i < j
 }
 ```
 
@@ -954,7 +1062,7 @@ We can then use this function in `summarise()` like so,
 skills |> 
   group_by(Time, LanguageTested) |> 
   summarise(
-    hl_narr = hodges_lehmann(Narration),
+    hl_narr = hodges_lehmann(Narration, na.rm = TRUE),
     .groups = "drop"
   ) |> 
   pivot_wider(names_from = "Time", names_prefix = "T", values_from = "hl_narr")
@@ -962,7 +1070,7 @@ skills |>
 
 :::
 
-## String manipulation
+# String manipulation {#sec-string-manipulation}
 It often happens that a single cell in a dataset contains 
 different pieces of information. So, too, it is the case 
 in our current example. The first participant in the dataset is 
@@ -984,7 +1092,8 @@ It could make sense to split up the information contained in this one
 cell into multiple cells. Thankfully, the strings in `Subject` are 
 structured logically and consistently: the different pieces of information
 are separated using underscores (`"_"`). We can hence split these strings
-at the underscores and retrieve the first and second pieces like so:
+at the underscores and retrieve the first and second pieces like so,
+obviating the need for more complicated regular expressions:
 
 ```{r}
 skills_wider_language <- skills_wider_language |> 
@@ -1036,7 +1145,7 @@ skills_wider_language |>
   sample_n(10)
 ```
 
-## A full-fledged example
+# A full-fledged example
 We had the children in the French/German/Portuguese project write
 short narrative and argumentative texts in each of their languages
 at three points in time. 
@@ -1063,7 +1172,7 @@ We'll use these datasets to answer three questions:
 
 In doing so, we'll need to make use of some of the tools introduced earlier.
 
-### Reading in the data
+## Reading in the data
 Let's start from a clean slate and read in the three datasets:
 
 ```{r}
@@ -1092,7 +1201,7 @@ But it seems to me that the following course of action is reasonable:
 2. Add these average ratings to `metrics` and draw some plots. (More on plotting in the second part!)
 3. Make `skills` longer and add the average ratings to it. Then draw some more plots.
 
-### Average rating per text
+## Average rating per text
 
 ```{r}
 rating_per_text <- ratings |> 
@@ -1102,18 +1211,18 @@ rating_per_text <- ratings |>
             .groups = "drop")
 ```
 
-::: {.callout-note}
-## Exercise
+::: {#exr-monolinguals}
+## Filtering out bilingual raters.
+
 Some of the raters consider themselves native speakers of several languages (`bi-French` etc.), 
 others consider themselves monolingual native speakers (`mono-French` etc.):
 ```{r}
 table(ratings$Rater_NativeLanguage)
 ```
-What could you do if you wanted to base the average rating per text only on the
-ratings provided by monolingual raters?
+Compute the average text ratings using only ratings from monolingual French speakers.
 :::
 
-### Add to `metrics`
+## Add to `metrics`
 The tibbles `metrics` and `rating_per_text` share a variable (`Text`),
 so the average ratings can easily be added to `metrics`:
 
@@ -1130,7 +1239,8 @@ metrics_ratings |>
   ggplot(aes(x = Guiraud, y = mean_rating)) +
   geom_point(shape = 1) +
   facet_grid(rows = vars(Time, Text_Type),
-             cols = vars(Text_Language)) +
+             cols = vars(Text_Language),
+             scales = "free_y") +
   xlab("Guiraud value") +
   ylab("average lexical richness rating")
 ```
@@ -1142,7 +1252,8 @@ metrics_ratings |>
   ggplot(aes(x = meanSUBTLEX, y = mean_rating)) +
   geom_point(shape = 1) +
   facet_grid(rows = vars(Time, Text_Type),
-             cols = vars(Text_Language)) +
+             cols = vars(Text_Language),
+             scales = "free_y") +
   xlab("mean SUBTLEX frequency") +
   ylab("average lexical richness rating")
 ```
@@ -1157,7 +1268,7 @@ correlations <- metrics_ratings |>
 correlations
 ```
 
-### Add to `skills`
+## Add to `skills`
 
 ```{r}
 rating_gridscore <- skills |> 
@@ -1179,7 +1290,8 @@ rating_gridscore |>
   ggplot(aes(x = mean_rating, y = grid_score)) +
   geom_point(shape = 1) +
   facet_grid(rows = vars(Time, Text_Type),
-             cols = vars(LanguageTested))
+             cols = vars(LanguageTested),
+             scales = "free_y")
 ```
 
 ```{r}
@@ -1193,6 +1305,314 @@ rating_gridscore |>
   )
 ```
 
+# Walkthrough with exercises
+In the previous sections, we started from a pretty clean dataset containing
+the writing data. The goal of this section is to give you some insight
+into how this data set was compiled starting from a more basic representation
+of the underlying data. This section is organised as a series of exercises
+that you should tackle in order. In completing these exercises, you'll convert
+a very wide dataset (with lots of criterion scores for up to twelve texts
+per child on a single row) into a dataset that contains a single composite
+score for a single text on each row. This process is considerably more complicated
+than running a couple of `pivot_*()` and `summarise()` commands due to how the
+data were laid out. Some of the instructions in the exercises are intentionally
+not spelt out in great detail.
 
-## Suggested reading
-The Bible for working with tibbles in R is Wickham et al.'s _R for Data Science_, which is freely available from [r4ds.hadley.nz](https://r4ds.hadley.nz/).
+::: {#exr-writing_import}
+## Reading in the data
+The file `writing_data.csv` contains the data reported on in @Lambelet_HELASCOT_writing. 
+Importing it into R requires some additional work.
+
+1. Open the file using Notepad (Windows), TextEdit (Mac) or whatever plain text editor you prefer.
+   What character is used to separate different cells?
+2. Try to read it in as a tibble named `writing`.
+3. You _may_ have obtained the following error message: 
+  `Error in nchar(x, "width") : invalid multibyte string, element 1`.
+   Error messages can be notoriously opaque in R,
+   but experience suggests that the accents and umlauts may have something to do with this error.
+   To fix the error, try to read in the dataset again,
+   but additionally override the `locale` argument
+   of the function you used in Step 2 as follows: `locale = locale(encoding = "Windows-1252")`.
+   This is a Windows character encoding for Western languages;
+   see [Wikipedia](https://en.wikipedia.org/wiki/Character_encoding#Common_character_encodings)
+   for an overview of common character encodings.
+4. Inspect the resulting tibble. If all is well, it should contain 473 rows and 288 columns.
+   Columns such as `Sco1R_Nb_mots` and `Sco1R_unitThemNbre` should be recognised as containing numbers
+   (`<dbl>`, short for _double_, a format for representing numbers in computers), whereas
+   columns such as `VPNID` and `Sco1R_unitThem` should be recognised as containing text strings (`<chr>`, short for _character_).
+   You'll also observe that the first column wasn't named in the csv file, so R assigned some meaningless name to it.
+:::
+
+```{r, echo = FALSE, message = FALSE}
+writing <- read_csv2(here("data", "writing_data.csv"), 
+                     locale = locale(encoding = "Windows-1252"))
+```
+
+::: {.callout-tip}
+## UTF-8 character encoding
+When saving spreadsheets as CSV files, use the UTF-8 character encoding.
+In Excel, you can select the character encoding from a drop-down menu
+when exporting the spreadsheet as a CSV; in LibreOffice.org Calc you'll be
+asked to specify how you want to save the CSV file exactly in a pop-up window.
+:::
+
+If all went well, the `writing` tibble has the following columns:
+```{r}
+colnames(writing)
+```
+Unfortunately, I wasn't able to locate a technical report or codebook that outlines the meaning
+of all of these column names and what range of values they can take.
+That said, this project featured three waves of data collection
+in which children were, among other things, asked to write two kinds of text:
+argumentative and narrative. Most of the children were French-Portuguese
+or German-Portuguese bilinguals, and these were asked to write both kinds of texts
+in each of their languages. Other children were considered monolingual
+speakers of French, German or Portuguese, and these only wrote texts in
+their respective language. Each text was scored on a grid.
+We can observe the following: 
+
+* The second column (`VPNID`) contains the participants' identification codes. We already encountered these in @sec-string-manipulation. As you can verify for yourself, there is a single row in the dataset for each participant.
+* Columns 154 (`hkngroup`), 155 (`Schulsprache`), 156 (`zweiSprachig`) and 157 (`Group`) seem to contain information regarding what type of participant we're dealing with. As we saw in @sec-string-manipulation, we can extract this information from the `VPNID` entries.
+* Columns 1 (`...1`), 3 (`X.x`), 158 (`PartDef`) and 159 (`X.y`) don't seem to contain any
+  relevant information. Perhaps they served some administrative purpose?
+* All the other column names are built up according to a pattern:
+  + Either the first letter is `P` or the first three letters are `Sco`. The `P` stands for 'Portuguese', the `Sco` for 'langue scolaire'.
+  + After the initial letter(s), we find a number between 1 and 3. This number specifies the time of data collection (i.e., T1, T2 or T3).
+  + After the number and before the (first) underscore, we find either the letter `A` or the letter `R`. From context, `A` means that we're dealing with an argumentative text, whereas `R` means that we're dealing with a narrative text (perhaps `R` is short for 'to relate'?).
+  + Whatever comes after the first underscore specifies either a criterion on the rating grid or some further information about the text production.
+    
+The goal of the next few exercises is to reshape this dataset so that each
+row represents a single text.
+
+::: {#exr-writing_longer}
+## Converting the dataset to a longer format
+Convert the `writing` tibble to a tibble named `writing_long`
+by following these steps:
+
+1. Retain only the columns `VPNID` as well as all columns containing
+   solely numerical information and whose names start with either `Sco` or `P`.
+   (The resulting tibble contains 473 rows and 250 columns.)
+2. Convert the resulting tibble to a longer one containing just three columns:
+   `VPNID`, `criterion` (containing the former column names) and `score` (containing
+   the values in those former columns). (The resulting tibble contains 117,777 columns.)
+:::
+
+```{r, echo = FALSE}
+writing_long <- writing |>
+  select(VPNID, starts_with("Sco"), starts_with("P")) |>
+  select(VPNID, where(is.numeric)) |>
+  pivot_longer(where(is.numeric),
+               names_to = "criterion", values_to = "score")
+```
+
+We continue with the `writing_long` tibble from the previous exercise.
+The `criterion` column contains a subset of the column names that were shown above. 
+We want to parse these former column names and extract the following pieces of information
+from them: Language, time of data collection, text type, and criterion proper.
+For example, given the string `"Sco2R_some_criterion"`, we want to 
+extract `"Sco"` as the language, `2` as the time of data collection,
+`"R"` as the text type, and `"some_criterion"` as the criterion name.
+Similarly, given the string `"P3A_OtherCriterion"`, we want to extract
+`"P"` as the language, `3` as the time of data collection,
+`"A"` as the text type, and `"OtherCriterion"` as the criterion name.
+
+If you feed the description in the previous paragraph to some AI tool
+like ChatGPT, it will probably be able to come up with a suggestion
+as to how to go about this.
+After some prodding, it suggested the following solution to me:
+
+```{r}
+my_string <- "Sco2R_some_criterion"
+my_regex <- "([^\\d]+)(\\d)([^_]*)_(.*)$"
+str_match(my_string, my_regex)
+
+my_string <- "P3A_OtherCriterion"
+str_match(my_string, my_regex)
+```
+
+Though it's not too important for the remainder of this walkthrough,
+the regex above is constructed in the following way:
+
+* `([^\\d]+)`: This group matches any group of one or more (`+`)
+  non-numerical (`^` for 'non', `\\d` for digits) characters.
+* `(\\d)` matches any digit.
+* `([^_]*)` matches any group of zero or more (`*`) characters that aren't
+  underscores.
+* `(.*)` matches any group of zero or more characters without restrictions.
+
+Evidently, it will be important to verify that the parsing was done correctly.
+
+We can use `str_match()` to parse any number of strings using a regex.
+For instance, the command below parses two strings and outputs the result
+as a matrix:
+```{r}
+my_strings <- c("Sco2R_some_criterion", "P3A_OtherCriterion")
+my_regex <- "([^\\d]+)(\\d)([^_]*)_(.*)$"
+str_match(my_strings, my_regex)
+```
+If we want to just extract, say, the language information from these strings,
+we can select the second column of this matrix like so:
+```{r}
+str_match(my_strings, my_regex)[, 2]
+```
+Similarly, we can extract the criterion name like so:
+```{r}
+str_match(my_strings, my_regex)[, 5]
+```
+
+We can define a helper function `extract_info()` that bundles these steps:
+```{r}
+extract_info <- function(my_strings, i, my_regex = "([^\\d]+)(\\d)([^_]*)_(.*)$") {
+  str_match(my_strings, my_regex)[, i]
+}
+extract_info(my_strings, 4)
+extract_info(my_strings, 2)
+```
+
+::: {#exr-writing_parsing}
+## Parsing the column names
+Using the `extract_info()` function just defined,
+add columns called `Language`, `Time`, `TextType` and `Criterion` (large 'c')
+to the `writing_long` tibble. Evidently, these columns should contain
+the appropriate pieces of information. Then drop the `criterion` (small 'c')
+column from the tibble.
+:::
+
+```{r, echo = FALSE}
+writing_long <- writing_long |> 
+  mutate(
+    Language = extract_info(criterion, 2),
+    Time = extract_info(criterion, 3),
+    TextType = extract_info(criterion, 4),
+    Criterion = extract_info(criterion, 5)
+  ) |> 
+  select(-criterion)
+```
+
+::: {#exr-writing_split}
+## Splitting up the dataset
+Split the `writing_long` tibble up into two tibbles: `argumentative`,
+which contains only the data relating to argumentative texts,
+and `narrative`, which contains only the data relating to narrative texts.
+
+If all went well, the `argumentative` tibble should contain 59,125 rows
+and 6 columns, and the `narrative` tibble 58,179 rows and 6 columns.
+:::
+
+```{r, echo = FALSE}
+argumentative <- writing_long |> 
+  filter(TextType == "A")
+narrative <- writing_long |> 
+  filter(TextType == "R")
+```
+
+While I wasn't able to retrieve a codebook for this dataset, 
+@Lambelet_HELASCOT_writing describe the grid according to which the texts
+were scored. I put the relevant information in the Excel file `scoring_criteria.xlsx`.
+
+::: {#exr-argumentative_wide}
+## Obtaining the relevant scores for each argumentative text
+We now want to reorganise the data in such a way that we can easily calculate
+the total score assigned to each text. Since the scoring criteria were
+different for argumentative and narrative texts, we do this separately
+for both text types. Here, we'll only go through the steps for argumentative
+texts, but as an additional exercise, you could follow the same steps
+(mutatis mutandis) to calculate the total scores for the narrative texts.
+Importantly, we need to check whether the scores obtained actually make sense.
+
+1. Inspect the `scoring_criteria.xlsx` file in your spreadsheet program.
+   In particular, observe that it contains two sheets.
+2. Read in the sheet containing the criteria for scoring the argumentatitive texts
+   into R as `criteria_arg`.
+3. In the tibble `argumentative`, only retain the rows where the value in 
+   the `Criterion` column is one of the scoring criteria for the argumentative texts
+   (i.e., those contained in `criteria_arg`). (See the hint below.)
+4. Drop the rows containing missing `score` values from `argumentative`.
+5. Convert the resulting tibble to a wide format in which each row represents
+   a single argumentative _text_ and contains the scores on all relevant criteria for this text.
+   Note that each combination of `VPNID`, `Language` and `Time` present in the dataset
+   represents one text.
+6. In principle, the current tibble should not contain any missing data.
+   Moreover, the criterion scores should not exceed the `MaxScore` values 
+   listed in `scoring_criteria.xlsx`.
+   Check if this is the case. (_Hint:_ It isn't.)
+   Inspect the rows in the dataset that contain abnormalities
+   and figure out what went wrong. 
+   (_Hint:_ First use `summary(argumentative)` to identify the columns containing 
+   aberrant entries. Then inspect the rows containing such entries.
+   Look up the corresponding information in `writing_data.csv`.)
+   Write a brief paragraph detailing what the issues are.
+   Fix the issues _without_ editing the spreadsheet.
+   This may require you to go all the way back to the start of this section
+   and make some modifications there.
+7. Once all issues have been taken care of, reconvert the tibble to a longer format,
+   i.e., with one row per criterion per text. 
+   Then, for each text, compute the variable `total_score_arg` as the sum of all criterion scores.
+8. Using `write_csv()`, save the tibble containing the variables 
+   `VPNID`, `Language`, `Time` and `total_score_arg` to a CSV file in the `data` subdirectory.
+
+_Hint for step 3:_ One option is to use one of the `*_join()` functions.
+Another one is to combine `filter()` with the `%in%` operator. 
+The following example shows how the `%in%` operator works.
+
+```{r}
+x <- c("A", "B", "C") # define vectors x, y
+y <- c("E", "C", "D", "A")
+y %in% x # which of the values in y occur in x?
+x %in% y # which of the values in x occur in y?
+```
+:::
+
+```{r, echo = FALSE}
+criteria_arg <- read_xlsx(here("data", "scoring_criteria.xlsx"), sheet = 1)
+argumentative <- argumentative |> 
+  inner_join(criteria_arg) |> 
+  select(-MaxScore, -Description) |> 
+  filter(!is.na(score))
+argumentative <- argumentative |> 
+  pivot_wider(names_from = "Criterion",
+              values_from = "score")
+# fix issues with capitalisation, values exceeding maximum possible (clamp)
+```
+
+::: {#exr-argumentative_compare}
+## Comparing the calculated scores with the scores used earlier
+We now have two sets of argumentative writing scores: 
+the ones that you calculated in the previous exercise,
+and the ones we used earlier. Let's compare them.
+
+1. Read in the scores you calculated from the CSV file you created in the previous exercise.
+2. Read in the `helascot_skills.csv` file we used earlier. 
+3. Combine both files in such a way that, for each text, you have both the
+   `total_score_arg` value that you computed as well as the `Argumentation` value
+   provided in `helascot_skills.csv` side-by-side.
+   Make sure that the resulting tibble contains the scores of all texts,
+   even in the case that a score is present for a text in one file but not in the other.
+   (Hint: You can directly use one of the `*_join()` functions. 
+   You'll need to do some thinking and some minor data wrangling first.)
+4. Are there any texts for which an `Argumentation` score exists but no `total_score_arg` was computed?
+   What is (are) the reason(s) for this (these) discrepancy(ies)?
+5. Are there any texts for which a `total_scores_arg` value was computed but no `Argumentation` score exists?
+   If so, output the relevant rows.
+6. For each text, compute the difference between the `Argumentation` and `total_score_arg` scores.
+   For how many texts is the difference not equal to 0?
+   Can you think of any reason(s) for any such differences? 
+:::
+
+::: {#exr-argumentative_summary}
+## Summarising the results
+
+1. For each combination of language (i.e., French, German, Portuguese), group (i.e., bilingual vs. comparison group) and time of data collection, compute the number of texts for which you calculated a `total_score_arg` value as well as the mean `total_score_arg` value.
+2. For each combination of language and group, compute the number of children who have `total_score_arg` values for _all_ three data collections. How many children in each cell have `total_score_arg` scores for the first and second data collection but not for the third? How many for the first and third, but not for the second? For the second and third, but not for the first? How many children in each cell only have a `total_score_arg` score at one data collection?
+:::
+
+# Suggested reading
+The Bible for working with tibbles in R is Wickham et al.'s _R for Data Science_, 
+which is freely available from [r4ds.hadley.nz](https://r4ds.hadley.nz/).
+
+# Software versions
+This page was built using the following R and package versions.
+```{r}
+devtools::session_info(pkgs = "attached")
+```
+

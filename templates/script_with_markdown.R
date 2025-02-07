@@ -16,8 +16,9 @@
 #' # Writing reports with R Markdown
 #' If you open this file in RStudio, you can compile it into a report
 #' by clicking `File > Compile Report...`.
-#' Any text preceded by `#' ``, such as this paragraph, will be shown as
-#' normal text in the report. I changed some of the default settings to make
+#' Any text preceded by `#' ` (i.e., a hash, a straight single quotation mark and a single space), 
+#' such as this paragraph, will be shown as normal text in the report. 
+#' I changed some of the default settings to make
 #' the report easier to read, but feel free to customise this template
 #' in whatever way you see fit.
 #' 
@@ -52,6 +53,17 @@
 library(tidyverse)
 
 #' Don't include the `install.packages()` commands, though.
+#' And while we're at it, don't include `View()` commands either - their output
+#' won't be shown, anyway.
+#' 
+#' ## Graphical parameters
+#' This is entirely optional.
+par(las = 1,
+    bty = "l",
+    mar = c(3, 3.5, 2, 1),
+    mgp = c(2, 0.3, 0),
+    tck = -.01,
+    cex = 0.8)
 
 #' # Graphs
 #' You can draw graphs as usual, including `ggplot2` graphs.
@@ -77,5 +89,5 @@ swiss |>
 swiss
 
 #' # Software versions
-devtools::session_info()
+devtools::session_info(pkgs = "attached")
 # alternatively, use sessionInfo()
