@@ -12,6 +12,7 @@ format:
     fig-format: svg
     self-contained: true
 editor: source
+bibliography: bibliography.bib
 ---
 
 # Goal
@@ -20,9 +21,13 @@ research data that I have found to be most useful and to show to you
 how you can use R, and specifically the `ggplot2/tidyverse` package,
 to draw informative plots.
 The focus is on drawing plots of raw data 
--- as opposed to visualisations of statistical models.
-For an introduction to visualising statistical models, see 
+as opposed to visualising statistical models.
+If you want to learn more about visualising statistical models, 
+you can check out my tutorial 
 [_Visualising statistical uncertainty using model-based graphs_](https://janhove.github.io/visualise_uncertainty/).
+I also decided to leave out plot types that are not easy to interpret properly
+for audiences without a considerable amount of statistical know-how
+such as kernel density estimates and quantile--quantile plots.
 
 ::: {.callout-tip}
 ## Type, don't copy-paste -- at home
@@ -77,10 +82,10 @@ library(tidyverse)
 ```
 
 
-# Introduction: Histograms
+# Histograms
 The file `Vanhove2015_Vpn.csv` contains a couple of pieces of information 
-about the participants in an [experiment](https://doi.org/10.1177/13670069155733) 
-that I conducted several years ago: 
+about the participants in an experiment
+that I conducted several years ago [@Vanhove2016]: 
 `ID`, scores on German, English and French vocabulary tests (`Wortschatz`, 
 `Englisch` and `Französisch`, respectively), sex (`Geschlecht`), and age 
 (`Alter`).
@@ -153,7 +158,12 @@ ggplot(data = d_hist,
   geom_histogram(binwidth = 1/30) # binwidth of 1/30 points
 ```
 
-There aren't any hard and fast rules for determining the optimal bin width. The default settings (1st plot) produce a histogram that seems to be a bit too fine-grained, whereas a bin width of 0.2 (2nd plot) results in too coarse a histogram. The other three histograms seem fine by me; I'd probably pick the 4th or 5th for a presentation or when writing a paper.
+Clearly, the shape of the histogram depends crucially on how the bins were chosen.
+There aren't any hard and fast rules for determining the optimal bin width. 
+The default settings (1st plot) produce a histogram that seems to be a bit too fine-grained, 
+whereas a bin width of 0.2 (2nd plot) results in too coarse a histogram. 
+The other three histograms seem fine by me; 
+I'd probably pick the 4th or 5th for a presentation or when writing a paper.
 
 Alternatively, you can specify the number of bins or you can define the bins yourself:
 
@@ -285,7 +295,7 @@ In order to faciliate comparisons of different histograms
 (e.g., histograms for different subsets of the data, or histograms
 of the same data but using different bin widths), what's often plotted
 along the y-axis isn't the _number_ of data points in each interval,
-but a **density estimate**. To this end, the y-axis is scaled in such a way
+but a so-called **density estimate**. To this end, the y-axis is scaled in such a way
 that the total _area_ covered by the histogram is equal to 1.
 Use `y = after_stat(density)` to plot density estimates rather than counts:
 
@@ -306,7 +316,8 @@ $$0.05 \times (0.5 + 1.5 + 5 + 4.5 + 3.5 + 2.75 + 1.5 + 0.75) = 1.$$
 If we were to express the English vocabulary scores on a scale
 from 0 to 10 rather than from 0 to 1 and use bins of width 0.5 points
 rather than of width 0.05 points, the density estimates would be a tenth
-of what they are now. This is because the area covered by the histogram
+of what they are now. 
+This is because, if we're using density estimates, the area covered by the histogram
 needs to equal 1.
 
 ::: {#exr-histogram}
@@ -319,54 +330,51 @@ Use `ggsave()` to save your preferred histogram for each of the two variables
 as an SVG file.
 :::
 
-# Density plots
+::: {.callout-note}
+## On probability densities
+The reason why histograms sometimes represent so-called density estimates
+rather than, say, the proportion of observations that fall in each bin is this.
+The distribution of a continuous variable $X$ can be described by its 
+**probability density**. This is a non-negative function $f$ with the property
+that
+$$\mathbb{P}(X \in [a,b]) = \int_{a}^b f(t) ~\textrm{d}t$$
+for all $a \leq b$.
+Or in words, the probability that $X$ takes on a value in the interval $[a,b]$
+corresponds to the area underneath the function graph (= integral) between the values $a$ and $b$.
+Since $\mathbb{P}(X \in (-\infty, \infty)) = 1$, the area underneath the whole graph
+should equal 1.
 
-# Empirical cumulative density plots
-```{r}
-d_hist |> 
-  ggplot(aes(x = Wortschatz)) +
-  stat_ecdf() +
-  xlab("Wortschatz") +
-  ylab("Empirical cumulative probability")
+For instance, the distribution of IQ values can be modelled as a normal distribution
+with mean 100 and standard deviation 15. The plot below shows the probability density
+function of this distribution. To compute the probability that a randomly picked
+person has an IQ between 92 and 103, we can compute the size of the shaded area.
+```{r, echo = FALSE}
+mean_val <- 100
+sd_val <- 15
+x_vals <- seq(mean_val - 4 * sd_val, mean_val + 4 * sd_val, length.out = 1000)
+density_vals <- dnorm(x_vals, mean = mean_val, sd = sd_val)
+df <- data.frame(x = x_vals, y = density_vals)
+shade_df <- df[df$x >= 92 & df$x <= 103, ]
+ggplot(df, aes(x, y)) +
+  geom_line(color = "black", linewidth = 1) +  # Density curve
+  geom_ribbon(data = shade_df, aes(ymin = 0, ymax = y), fill = "grey10", alpha = 0.4) +  # Shaded area
+  labs(x = "x", y = "Density") +
+  theme_minimal()
 ```
 
-```{r}
-d_hist |> 
-  ggplot(aes(x = Wortschatz)) +
-  stat_ecdf() +
-  stat_function(fun = pnorm, 
-                args = list(mean = mean(d_hist$Wortschatz),
-                      sd = sd(d_hist$Wortschatz)),
-                linetype = "dashed") +
-  xlab("Wortschatz") +
-  ylab("Empirical cumulative probability")
-```
-
-# Quantile--quantile plots
-```{r}
-d_hist |> 
-  ggplot(aes(sample = Wortschatz)) +
-  geom_qq(shape = 1) +
-  geom_qq_line() +
-  xlab("Standard normal quantiles") +
-  ylab("Empirical quantiles of Wortschatz")
-```
-
-```{r}
-d_hist |> 
-  ggplot(aes(sample = Wortschatz)) +
-  geom_qq(shape = 1,
-          distribution = stats::qunif) +
-  geom_qq_line(distribution = stats::qunif) +
-  xlab("Quantiles of Unif([0,1])") +
-  ylab("Empirical quantiles of Wortschatz")
-```
-
+Histograms can be thought of as estimators of the probability density function
+of the distribution from which the observed values were sampled.
+Other types of plots that serve this purpose exist (kernel density estimation),
+but I don't think these are too useful in an introduction such as this.
+Further note that only continuous distributions have probability densities.
+(By definition, $X$ has a continuous distribution if $\mathbb{P}(X = x) = 0$
+for all real numbers $x$. )
+:::
 
 # Boxplots
 The file `VowelChoices_ij.csv`
 contains a part of the results
-of a learning [experiment](https://doi.org/10.1177/13670069155733) 
+of a learning experiment [@Vanhove2016]
 in which 80 participants were randomly assigned to one
 of two learning conditions (`LearningCondition`: `<oe> participants` and `<ij> participants`).
 The column `PropCorrect` contains the proportion 
@@ -382,7 +390,7 @@ d_box <- read_csv(here("data", "VowelChoices_ij.csv"))
 
 Below you see a basic boxplot of the vocabulary test scores of the
 eighty participants in the same learning experiment.
-The median score is highlighted by a thick line.
+The **median** score is highlighted by a thick line.
 The 25th and 75th percentiles are highlighted by thinner lines and together
 form a box. The difference between the 75th and 25th percentile 
 (also known as the third and the first quartile) is
@@ -394,6 +402,52 @@ However, data points whose distance to the box exceeds 1.5 times the inter-quart
 range are plotted separately. If such data points exist, the lines protruding from 
 the box only extend up to the lowest / highest data point whose distance to the 
 box is lower than 1.5 times the IQR.
+
+::: {.callout-note}
+## Quantiles, percentiles, median?
+Let $X = (X_1, \dots, X_n)$ be a data vector and let $\alpha \in (0,1)$.
+We say that a value $q_{\alpha}$ is an $\alpha$ **quantile** (or a $100\alpha$th **percentile**) of the $X$
+if at least $\alpha \cdot n$ values in $X$ are no greater than $q_{\alpha}$
+and at most $(1-\alpha) \cdot n$ values in $X$ are no smaller than $q_{\alpha}$.
+For instance, the boxplot below shows that 34 is a 0.75 quantile (or 75th percentile)
+of the vocabulary scores. Indeed, we can verify that at least 75% (in fact 78.75%) of the 
+vocabulary scores are no greater than 34 and that at least 25% (in fact 38.75%)
+of them are no smaller than 34.
+
+```{r, echo = FALSE, message = FALSE}
+dat <- read_csv(here("data", "Vanhove2015_Vpn.csv"))
+```
+
+
+```{r}
+mean(dat$Wortschatz <= 34)
+mean(dat$Wortschatz >= 34)
+```
+Note that it is _not_ the case that _exactly_ $100\alpha$% of the observations
+are no greater than any given $\alpha$ quantile. Moreover, quantiles aren't 
+necessarily uniquely defined. For instance, 28.4 is a 0.075 quantile of the vocabulary
+scores. But so is 28.
+```{r}
+mean(dat$Wortschatz <= 28.4) # at least 0.075
+mean(dat$Wortschatz >= 28.4) # at least 0.925
+
+mean(dat$Wortschatz <= 28)   # at least 0.075
+mean(dat$Wortschatz >= 28)   # at least 0.925
+```
+
+When we talk about _the_ (as opposed to _an_) $\alpha$ quantile,
+we mean the average of all the $\alpha$ quantiles.
+
+A median is merely a $0.5$ quantile. _The_ median is the average 
+of all $0.5$ quantiles. In practice, this boils down to the average of
+the smallest and the largest such quantile.
+
+(The discussion above assumes that we are interested in the empirical
+distribution of the values in the data vector $X$ rather than in estimating
+the quantiles of the distribution from which $X$ was sampled.
+For our present purposes, this is more than sufficient.
+But see the explanation `?quantile` for details.)
+:::
 
 From the boxplot below, we can glean that the IQR is $34 - 31 = 3$.
 The highest data point has a value of 38. Since $38 < 34 + 1.5 \times 3 = 38.5$,
@@ -442,9 +496,102 @@ ggplot(data = d_box,
 Plain boxplots are useful when 
 you want to get a quick idea of the distribution
 of the data in different groups.
-However, identically looking boxplots can [represent](http://goo.gl/v4vYvx) 
-markedly different distributions!
-For this reason, it can be useful to draw boxplots
+However, identically looking boxplots can represent markedly different distributions!
+Furthermore, as the next exercise may illustrate, boxplots may be hard to interpret at first blush.
+
+::: {#exr-distributions}
+## Matching boxplots to histograms
+For the plot below, I generated data from five different distributions.
+For each generated dataset, I drew a histogram and a boxplot.
+Match the histograms and the boxplots that are drawn on the basis of the same data.
+Are there any pecularities of the data distributions that are visible in the
+histogram but not in the boxplot?
+```{r, echo = FALSE, fig.width = 6, fig.height = 12}
+set.seed(2025-10-02)
+d1 <- c(rbeta(40, 20, 1), rbeta(40, 1, 20))
+d2 <- rbeta(80, 3, 3)
+d3 <- c(rbeta(40, 15, 40), rbeta(40, 40, 15))
+d4 <- round(rbeta(80, 3, 3) * 7) / 7
+d5 <- rbeta(80, 3, 1)
+df <- data.frame(d1, d2, d3, d4, d5)
+
+h1 <- ggplot(df, aes(x = d1, y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.1), colour = "black", fill = "grey") +
+  xlab("x") +
+  xlim(0, 1) +
+  theme_bw()
+
+h2 <- ggplot(df, aes(x = d2, y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.1), colour = "black", fill = "grey") +
+  xlab("x") +
+  xlim(0, 1) +
+  theme_bw()
+
+h3 <- ggplot(df, aes(x = d3, y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.1), colour = "black", fill = "grey") +
+  xlab("x") +
+  xlim(0, 1) +
+  theme_bw()
+
+h4 <- ggplot(df, aes(x = d4, y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.1), colour = "black", fill = "grey") +
+  xlab("x") +
+  xlim(0, 1) +
+  theme_bw()
+
+h5 <- ggplot(df, aes(x = d5, y = after_stat(density))) +
+  geom_histogram(breaks = seq(0, 1, by = 0.1), colour = "black", fill = "grey") +
+  xlab("x") +
+  xlim(0, 1) +
+  theme_bw()
+
+b1 <- ggplot(df, aes(x = "", y = d1)) +
+  geom_boxplot() +
+  xlab(element_blank()) +
+  ylab("x") +
+  ylim(0, 1) +
+  theme_bw()
+
+b2 <- ggplot(df, aes(x = "", y = d2)) +
+  geom_boxplot() +
+  xlab(element_blank()) +
+  ylab("x") +
+  ylim(0, 1) +
+  theme_bw()
+
+b3 <- ggplot(df, aes(x = "", y = d3)) +
+  geom_boxplot() +
+  xlab(element_blank()) +
+  ylab("x") +
+  ylim(0, 1) +
+  theme_bw()
+
+b4 <- ggplot(df, aes(x = "", y = d4)) +
+  geom_boxplot() +
+  xlab(element_blank()) +
+  ylab("x") +
+  ylim(0, 1) +
+  theme_bw()
+
+b5 <- ggplot(df, aes(x = "", y = d5)) +
+  geom_boxplot() +
+  xlab(element_blank()) +
+  ylab("x") +
+  ylim(0, 1) +
+  theme_bw()
+
+library(patchwork)
+(h3 + b2) /
+  (h5 + b4) /
+  (h2 + b1) /
+  (h1 + b3) /
+  (h4 + b5)
+```
+
+:::
+
+To make boxplots more informative and easier to interpret,
+it can be useful to draw boxplots
 that also show the _individual_ data points rather
 than merely the distribution's quartiles.
 Such visualisations are particularly useful
@@ -520,17 +667,219 @@ ggplot(data = d_box,
 
 Shapes 21 through 25 resemble shapes 1 through 5, but they can be coloured in.
 
-### Exercise
-The dataset `Wagenmakers_Zeelenberg.csv` contains data from a study by  [Wagenmakers et al. (2016)](https://doi.org/10.1177/1745691616674458).
-In this experiment, participants were instructed to either `smile` or `pout` (`Condition`)
+::: {#exr-boxplot}
+## A boxplot
+@Wagenmakers2016 set out to replicate
+an older study across a large number of psychology labs.
+The dataset `Wagenmakers_Zeelenberg.csv` contains summary data from one such lab (Zeelenberg et al.).
+In the experiment, participants were instructed to either `smile` or `pout` (`Condition`)
 as they judged the funniness of four cartoons on a 10-point scale (0--9).
 The mean rating per participant can be found in the creatively named column `MeanRating`.
 The research question was if smiling participants gave higher funniness ratings than pouting ones.
 
-**Your task:** Compute the number of participants in each condition as well as the mean `MeanRating` per condition (see the previous primer). 
-Also draw boxplots (with individual data points) on the basis of which this research question
+Compute the number of participants in each condition as well as 
+the mean `MeanRating` per condition (see the previous primer). 
+Also draw boxplots (with individual data points) on the basis of 
+which this research question
+can be answered. Label your axes appropriately. 
+Save a graph you're happy with
+using `ggsave()`.
+:::
+
+::: {#exr-datawrangling}
+## Another boxplot and some data wrangling
+You can find the data from all labs involved in the @Wagenmakers2016
+replication attempt on [https://osf.io/hgi2y/](https://osf.io/hgi2y/).
+Locate and download the data from any of the labs (other than the Zeelenberg et al. one).
+Inspect the dataset using a spreadsheet program and note how the data are laid out.
+In particular, observe that the data entries start in row 3 as opposed to row 2.
+The funniness ratings are in columns K through N, whereas columns D through H
+indicate whether the participants followed the instruction. Column C shows
+which condition the participants were assigned to.
+Using R only (i.e., don't use your spreadsheet program for the next steps),
+do the following:
+
+1. Read in the data. (The `skip` parameter of the `read_csv()` function may be useful.)
+2. Create a tibble that contains the mean funniness ratings assigned by each participant that followed the instructions on all four cartoons. This tibble should, at the very least, contain a column indicating the condition the participants were assigned to and the mean funniness rating they gave to the four cartoons. Participants who did not follow the instructions all the time should not be included. It's probably a good idea to label the conditions `pout` and `smile` rather than `0` and `1`.
+3. Compute the number of participants with usable data in each condition as well as the mean average funniness rating per condition. 
+4. Draw boxplots (with individual data points) on the basis of which this research question
 can be answered. Label your axes appropriately. Save a graph you're happy with
 using `ggsave()`.
+:::
+
+::: {.callout-note}
+## Comparing groups using frequency polygons or empirical cumulative density functions
+It's possible to compare the distribution of some variable
+across two or more groups using
+**frequency polygons**, too. These are constructed similarly to histograms,
+but without the bars being drawn. See the code below. Depending on how many bins
+are drawn and where their boundaries are, these frequency polygons may take
+on different shapes.
+
+```{r}
+ggplot(data = d_box,
+       aes(x = PropCorrect, 
+           y = after_stat(density),
+           colour = LearningCondition)) +
+  geom_freqpoly(bins = 10)
+```
+
+Another possibility is to make use of so-called **empirical cumulative density functions**.
+For a given data vector $X = (X_1, \dots, X_n)$, the empirical cumulative density
+function outputs for each number $r$ the proportion of data points $X_i$ in $X$ 
+such that $X_i \leq r$:
+
+```{r}
+ggplot(data = d_box,
+       aes(x = PropCorrect,
+           colour = LearningCondition)) +
+  stat_ecdf() +
+  ylab("empirical cumulative density")
+```
+
+What may be counterintuitive at first blush is that the line for the
+<oe> participants is higher than the one for the <ij> participants.
+On reflection, this makes sense: 
+Looking up the value 0.5 on the x-axis,
+we may deduce that about 62.5% of the <ij> participants have a `PropCorrect` value of 0.5 or below,
+whereas more than 87.5% of the <oe> participants have a `PropCorrect` value of 0.5 or below.
+So the group that tends to have the _lowest_ values 
+should have _higher_ empirical cumulative density values!
+This may go some way towards explaining why I don't recall ever having seen empirical cumulative
+density plots outside of the statistical literature. That said, an attractive feature
+of these plots is that they fully characterise the distribution of the observed data
+and that they don't require you to fiddle with parameters such as the number of bins.
+:::
+
+::: {#exr-ecdf}
+## Boxplots vs empirical cumulative density functions
+For the plot below, I generated five datasets for two groups.
+For each generated dataset, I drew boxplots and empirical cumulative density plots.
+Match the boxplots and the empirical cumulative
+density plots that are drawn on the basis of the same data.
+Are there any pecularities of the data distributions that are visible in the
+empirical cumulative density plots but not in the boxplot?
+```{r, echo = FALSE, fig.width = 6, fig.height = 12}
+set.seed(2025-02-11)
+n <- 40
+df <- data.frame(
+  Group = rep(c("A", "B"), each = n),
+  d1 = c(rnorm(n), rnorm(n, 1)),
+  d2 = c(rbeta(n, 3, 3), rbeta(n, 1.2, 1.2)),
+  d3 = c(rnorm(n), rnorm(n/2, -2), rnorm(n/2, 2)),
+  d4 = c(rchisq(n, 3), rpois(n, 3)),
+  d5 = c(rep(0, 15), rchisq(25, 2), rf(n, 1, 6))
+)
+normalise <- function(x) {
+  x <- x - min(x)
+  x / max(x)
+}
+df <- df |> 
+  mutate_if(is.numeric, normalise)
+
+b1 <- ggplot(df, aes(x = Group, y = d1)) +
+  geom_boxplot() +
+  ylab("outcome")
+
+b2 <- ggplot(df, aes(x = Group, y = d2)) +
+  geom_boxplot() +
+  ylab("outcome")
+
+b3 <- ggplot(df, aes(x = Group, y = d3)) +
+  geom_boxplot() +
+  ylab("outcome")
+
+b4 <- ggplot(df, aes(x = Group, y = d4)) +
+  geom_boxplot() +
+  ylab("outcome")
+
+b5 <- ggplot(df, aes(x = Group, y = d5)) +
+  geom_boxplot() +
+  ylab("outcome")
+
+c1 <- ggplot(df, aes(x = d1, colour = Group)) +
+  stat_ecdf() +
+  xlab("outcome") +
+  ylab("emp. cum. density fct.")
+
+c2 <- ggplot(df, aes(x = d2, colour = Group)) +
+  stat_ecdf() +
+  xlab("outcome") +
+  ylab("emp. cum. density fct.")
+
+c3 <- ggplot(df, aes(x = d3, colour = Group)) +
+  stat_ecdf() +
+  xlab("outcome") +
+  ylab("emp. cum. density fct.")
+
+c4 <- ggplot(df, aes(x = d4, colour = Group)) +
+  stat_ecdf() +
+  xlab("outcome") +
+  ylab("emp. cum. density fct.")
+
+c5 <- ggplot(df, aes(x = d5, colour = Group)) +
+  stat_ecdf() +
+  xlab("outcome") +
+  ylab("emp. cum. density fct.")
+
+(b5 + c5) /
+  (b4 + c2) /
+  (b1 + c1) /
+  (b3 + c3) /
+  (b2 + c4)
+```
+:::
+
+::: {.callout-tip}
+## Try out alternative plots
+Boxplots are a decent default choice for comparing groups.
+But sometimes they obscure rather than reveal relevant differences
+between groups, as shown in the previous exercises.
+Furthermore, if the outcome data are fairly coarse, it may be more sensible
+to plot the individual data points and highlight the mean instead of the median.
+
+To illustrate this, we use data from an experiment by @Berthele2012.
+The data are available in the file `berthele2012.csv`.
+Skipping over the details, we'd like to know how the numeric variable `Potenzial`
+varies depending on the values of the categorical variables `CS` and `Name`.
+In the plot below, we use a technique called facetting to split up
+the graph into two subgraphs. The boxplots don't seem to be too informative
+as they are degenerate: The medians coincide with either the 1st or 3rd quartile
+due to the coarseness of the data.
+```{r}
+berthele <- read_csv(here("data", "berthele2012.csv"))
+ggplot(berthele,
+       aes(x = CS, y = Potenzial)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(shape = 1, position = position_jitter(height = 0, width = 0.2)) +
+  facet_grid(cols = vars(Name))
+```
+
+Instead of highlighting the medians and the quartiles, 
+let's compute the mean `Potenzial` score as well as the standard deviation
+for the `Potenzial` scores in each cell and add these to the data plot.
+Note that we can pass new `data` arguments to geom-layers (here: `geom_pointrange()`)
+in order to visualise data from different sources.
+I also jittered the data points vertically ever so slightly in order to be able
+to make out the overlapping data points better.
+```{r}
+potenzial_summary <- berthele |> 
+  group_by(CS, Name) |> 
+  summarise(mean_Potenzial = mean(Potenzial),
+            sd_Potenzial = sd(Potenzial),
+            .groups = "drop")
+
+ggplot(berthele,
+       aes(x = CS, y = Potenzial)) +
+  geom_point(shape = 1, position = position_jitter(height = 0.05, width = 0.2)) +
+  geom_pointrange(data = potenzial_summary,
+             aes(y = mean_Potenzial, ymin = mean_Potenzial - sd_Potenzial,
+                     ymax = mean_Potenzial + sd_Potenzial),
+             size = 1, colour = "blue", shape = 8) +
+  facet_grid(cols = vars(Name))
+```
+
+:::
 
 # Line charts
 Line charts are a reasonable choice for presenting
@@ -539,7 +888,7 @@ used to depict temporal developments, but I don't
 think their use should be restricted to this. I often
 use line charts to better understand complex results
 that are presented in a table. For instance, 
-[Slavin et al. (2011)](https://doi.org/10.3102/0162373711398127)
+@Slavin2011
 presented their results in four tables
 (Tables 4--7). I entered the results pertaining 
 to the PPVT (English) and TVIP (Spanish) post-tests
@@ -787,7 +1136,7 @@ segments(x0 = 1, x1 = 2,
 par(par_original)
 ```
 
-For further discussion, see the blog post [_Before worrying about model assumptions, think about model relevance_](https://janhove.github.io/posts/2019-04-11-assumptions-relevance/) as well as the article [_Towards simpler and more transparent quantitative research reports_](https://doi.org/10.1075/itl.20010.van) [[preprint]](https://doc.rero.ch/record/328689).
+For further discussion, see the blog post [_Before worrying about model assumptions, think about model relevance_](https://janhove.github.io/posts/2019-04-11-assumptions-relevance/) as well as the article @Vanhove2020b (preprint available from my website).
 
 The upshot is this:
 If at all possible, **don't just show averages** but try to give your readers
@@ -795,17 +1144,72 @@ If at all possible, **don't just show averages** but try to give your readers
 a sense of how the actual data are distributed.
 :::
 
+::: {#exr-morphologicalcues}
+## A line chart
+The dataset `MorphologicalCues.csv` contains data stemming from a learning task in which the participants had to associate a morphological form with a syntactic function. 70 learners were randomly assigned to one of three conditions (`Condition`):
+
+* `RuleBasedInput`: In this condition, the input showed a perfect association between the morphological form and the syntactic function.
+* `StrongBias`: The input showed a strong, but imperfect association between form and function.
+* `WeakBias`: The input showed a weak (but non-zero) association between form and function.
+
+To track the learners' progress throughout the task, the learners took part in three sorts of exercises: 
+`Comprehension`, grammaticality judgement (`GJT`) and 
+`Production`. They did this at four stages during the data collection (`Block 1`, `2`, `3`, `4`), that is, after receiving a bit of input, some more input, etc.
+
+The column `Accuracy` shows the mean percentage of correct responses per Block, per Task and per Condition.
+
+The research question: How does `Accuracy` develop in the course of the data collection depending on the Task and Condition?
+
+Plot these data so that the research question can be answered. You will want to try out several graphs so that you can pick a graph that you find most comprehensible.
+:::
+
+::: {#exr-schlechtweg1}
+## Compute summary statistics and drawing a line chart
+@Schlechtweg2023 investigated how well native speakers of German can tell
+apart the English /ɛ/ (_pen_) and /æ/ (_pan_) vowels. In their first study,
+they played a total of 198 recordings to each of their 51 participants
+and asked them to identify whether the vowel sound contained in these recordings
+was English /ɛ/ or English /æ/. The recordings differed in terms of their
+spectral properties (formants 1 and 2) as well as in their duration.
+
+The file `schlechtweg2023_selection.txt` contains the data for this task.
+It contains the columns `Subject` (the participants' IDs),
+`Item` (the minimal pair the recording belonged to),
+`GermanPillai` (not relevant for this exercise),
+`Duration` (`short`, `middle` or `long`),
+`Step` (an integer between 1 and 11, with 1 representing a more
+open and somewhat more back articulation as would be typical of /æ/
+and 11 representing a closer and somewhat more fronted articulation
+as would be typtical of /ɛ/),
+`LevelEnglish` (`high`, `low` or `mid`),
+`SelVowel1` (with 1 meaning that the participant selected /æ/
+and 0 meaning that they selected /ɛ/),
+and `ReactionTime` (not relevant for this exercise).
+
+We would expect that the proportion of /æ/ selections drops
+as `Step` gets closer to 11. Further, since English /æ/ tends
+to be longer than English /ɛ/, we expect that the proportion
+of /æ/ selections is greater for longer durations than
+for shorter ones. Lastly, we expect that highly-proficient
+participants are more sensitive to both of these cues.
+
+Read in the data. Aggregate it in a sensible way
+and visualise the aggregated data using a linechart
+in such a way that it can be gauged whether these
+expectations are borne out.
+:::
 
 # Putting it all together: Portuguese reading and writing skills
 
 I'll walk you through this example in the lecture.
+The data stem from @Lambelet_HELASCOT_writing and @Pestana_HELASCOT_reading.
 
 ::: {.callout-important}
 ## Drawing decent graphs can take time
 Don't get disheartened by the lengthy code snippets below.
 They are not the result of one energetic burst of coding.
 As I'll try to demonstrate in the lecture, I started with a
-fairly basic graph, found some problem with it, tried to fix the error,
+fairly basic graph, found some problem with it, tried to fix it,
 and so on. The end result is a plot with 27 boxplots that
 hopefully enables readers to compare the three language groups
 in terms of their test scores, to gauge the progress that each
@@ -881,7 +1285,7 @@ It's also difficult to add additional information to pie charts
 
 2. Readers gauge the numbers (in this case: the proportions)
 that the pie chart represents less accurately than when they're 
-presented in a bar chart or in a dot plot ([Cleveland and McGill 1984](https://doi.org/10.1080/01621459.1984.10478080)).
+presented in a bar chart or in a dot plot [@Cleveland1984].
 
 The graph in the middle is a **bar chart**, the one of the right
 a **dot plot**. Both are better choices than pie charts.
@@ -925,7 +1329,7 @@ If you prefer bar charts: It's usually better to plot the bars _next_ to each ot
 
 ## A basic Cleveland dot plot
 For this tutorial, 
-we'll use data from [Vanhove (2017)](https://doi.org/10.1111/lang.12230).
+we'll use data from @Vanhove2017.
 For this study, I recruited 175 native speakers of Dutch
 from Belgium and the Netherlands. I showed them 44
 German words with Dutch cognates 
@@ -1099,15 +1503,54 @@ ggplot(d_dot,
 
 Not half bad, I think.
 
-## Suggested reading
-As their name suggests, Cleveland dot plots were popularised by
-William S. Cleveland in his book _Visualizing data_.
-But if you want to learn more about this flexible visualisation tool,
-I suggest you check out Lukas Sönning's [_The dot plot: A graphical tool for data analysis and presentation_](https://doi.org/10.20378/irbo-51101),
-which is geared towards linguists.
+::: {#exr-dotplot}
+## Another dotplot
+In @Vanhove2016,
+native speakers of German who hadn't learnt
+Dutch yet were assigned to one of two
+learning conditions (_oe--u_ and _ij--ei_), in which they
+were exposed to Dutch--German cognates exhibiting
+the grapheme correspondences oe--u (e.g., _hoed_--_Hut_)
+and ij--ei (e.g., _wijn_--_Wein_), respectively.
+I then asked them to translate previously unseen
+Dutch words containing these digraphs. 
+The question was quite simply, if the participants
+who had been exposed to the oe--u correspondence
+but not to the ij--ei correspondence would be more likely
+to translate Dutch words containing _oe_ as German words
+containing _u_ than the participants who had been
+exposed to the ij--ei correspondence but not to the oe--u
+correspondence, and similarly for the other way round.
+
+The data are laid out in three data sets:
+
+* `Vanhove2016_subjects.csv` contains information about
+the participants, including the `LearningCondition`
+to which they were assigned; 
+* `Vanhove2016_items.csv` contains information about the items, including the `Category` to which they belong (`ij cognate`, `oe cognate`, `other cognate`, `non-cognate`);
+* `Vanhove2016_translations.csv` shows how the subjects translated each item and how these translations were scored. The relevant outcome is `CorrectVowel`.
+
+Read in and merge these three datasets.
+Then draw a dotchart similar to the one above that shows, for each 
+Dutch word containing _oe_ or _ij_, the 
+proportion of participants in each condition that used the correct vowel
+when translating it. You can ignore the items in the categories `other cognate`
+and `non-cognate` as well as the items occurring in the `Training` `Block`.
+Interpret the results.
+
+Bonus: Aggregate the data in a different way, namely by computing the
+proportion of correct vowel uses per participant per item category.
+(You should again ignore the categories `other cognate` and `non-cognate`
+as well as the `Training` `Block`.)
+Visualise these aggregated data, for stance using boxplots. 
+Do you see any advantages and disadvantages of this visualisation compared to the dotchart?
+Would it be useful to include both kinds of visualisation when presenting
+the study's results at a conference or in a research paper?
+:::
+
 
 # Scatterplots
-For my PhD thesis ([Vanhove 2014](https://folia.unifr.ch/unifr/documents/303552)),
+For my PhD thesis [@Vanhove2014],
 I investigated how people's ability to
 recognise written and spoken cognates in a related but
 unknown language develops throughout the lifespan and
@@ -1194,6 +1637,9 @@ The warning concerns missing values in the `WST.Right` variable:
 per_participant |> 
   filter(is.na(WST.Right))
 ```
+While only one participant had a missing `WST.Right` value,
+this participant is represented twice in the dataset (once for auditory stimuli,
+once for written stimuli), hence the two warnings.
 
 As for the decision which variable to put along which axis.
 By and large, put the variable that is most likely to be the _cause_
@@ -1202,7 +1648,6 @@ likely to be the _effect_ along the _y_ axis. In this case,
 it seems more likely that L1 skills affect one's ability to recognise
 cognates in a foreign language than vice versa. Hence, put 
 the variable representing L1 skills along the _x_ axis.
-
 
 ::: {.callout-important}
 ## No correlations without scatterplots!
@@ -1268,7 +1713,8 @@ The points on the smoother are a kind of **mean value of the $Y$ variable for th
 In the left panel, for instance, the average number of correct translations in the auditory mode for someone with an English test score of 30 is roughly 17--18,
 whereas the average number of correct translations for written words for participants with a score of 40 on the English test is about 25.
 
-We needn't amuse ourselves with the maths behind these smoothers,
+We needn't necessarily amuse ourselves with the maths behind these smoothers 
+(but check out the info box if you're curious),
 but the following points are important:
 
 1. The trend line is nearly always a bit _wiggly_. 
@@ -1278,7 +1724,8 @@ This is the case even when the relationship itself is as good as linear.
 
 To elaborate on the second point, consider the graph below, which shows 
 a scatterplot of simulated data with two scatterplot smoothers.
-The _red_ line was drawn with the default settings. This line doesn't capture an important feature of the relationship (the data points go up and down). The _blue_ line captures this trend much better. It was drawn using the command `geom_smooth(span = 0.1)`. The `span` parameter determines how wiggly the curve may be (the smaller `span`, the wigglier the curve). By default, span is set to 0.75. Finding a decent span value is matter of trial and error.
+The red line was drawn with the default settings. This line doesn't capture an important feature of the relationship (the data points go up and down). 
+The blue line captures this trend much better. It was drawn using the command `geom_smooth(span = 0.1)`. The `span` parameter determines how wiggly the curve may be (the smaller `span`, the wigglier the curve). By default, span is set to 0.75. Finding a decent span value is matter of trial and error.
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 df <- data.frame(x = runif(100, -4*pi, 4*pi))
@@ -1292,11 +1739,11 @@ ggplot(dat = df,
               method = "loess")
 ```
 
-In the second example, the _red_ line was drawn
+In the second example, the blue line was drawn
 using `geom_smooth(span = 0.1)`.
 This line is much too wiggly, and it essentially 
 models random deviations from the general trend.
-The _blue_ line, drawn with the default setting (`span = 0.75`),
+The red line, drawn with the default setting (`span = 0.75`),
 captures the general trend much more sensibly.
 The _green_ line, by contrast, isn't wiggly enough (`span = 3`).
 
@@ -1307,11 +1754,11 @@ df$y <- 3*df$x^3 - 0.2*df$x^2 - 50*df$x + rnorm(50, sd = 1000)
 p1 <- ggplot(dat = df,
        aes(x = x, y = y)) +
   geom_point(pch = 1) +
-  geom_smooth(span = 0.1, colour = "red", se = FALSE, lwd = 0.5, method = "loess")
+  geom_smooth(span = 0.1, colour = "blue", se = FALSE, lwd = 0.5, method = "loess")
 p2 <- ggplot(dat = df,
        aes(x = x, y = y)) +
   geom_point(pch = 1) +
-  geom_smooth(span = 0.75, colour = "blue", se = FALSE, lwd = 0.5, method = "loess")
+  geom_smooth(span = 0.75, colour = "red", se = FALSE, lwd = 0.5, method = "loess")
 p3 <- ggplot(dat = df,
        aes(x = x, y = y)) +
   geom_point(pch = 1) +
@@ -1326,19 +1773,117 @@ you need to fiddle a bit with the `span` parameter.
 More generally, data analysis and statistics aren't a matter of
 blindly applying formulae and recipes.
 
-::: {.panel-tabset}
+::: {.callout-note}
+## Trend line techniques
+By default, `geom_smooth()` draws the trend line using 
+the LOESS (_locally estimated scatterplot smoothing_) technique for
+datasets with fewer than 1,000 observations and uses a GAM
+(_generalised additive model_) for larger datasets.
+Alternatives are simple linear regression (`method == "lm"`) 
+and robust linear regression (`method == "rlm"`).
+We can't discuss all of these techniques in this primer, 
+but LOESS works roughly as follows.
 
-## Linear regression
-
-Pick $a, b$ such that $\sum_{i=1}^n (y_i - a - bx_i)^2$ is minimal.
-
-## Robust linear regression
-
-## LOWESS
-
-## GAM
-
+Let $X = (X_1, \dots, X_n)$ be a data vector of predictor values
+and let $Y = (Y_1, \dots, Y_n)$ be a data vector of outcome values.
+We specify a positive value for the `span` parameter, 
+also referred to as $\alpha$. Typically, $\alpha \in (0, 1)$, and we will restrict our attention to this case.
+If we want to evaluate the LOESS smoother at a given value $x_*$,
+we first compute the distances between the observed predictor values
+and $x_*$:
+$$d_i = |X_i - x_*|$$
+for $i = 1, \dots, n$. 
+We sort the distances ascendingly and read out the smallest distance
+such that at least $\alpha \cdot n$ of the distances are no larger than it.
+Call this distance $M$.
+Next, for each data point, we compute a weight:
+$$w_i = \begin{cases}\left(1 - \left(\frac{d_i}{M}\right)^3\right)^3 & \textrm{if $d_i \leq M$}, \\ 0 & \textrm{else},\end{cases}$$
+for $i = 1, \dots, n$.
+This weighting scheme assigns large weights to data points with predictor values
+close to $x_*$ and smaller ones with predictor values farther away from $x_*$.
+Data points with predictor values larger than $M$, i.e., data points that do not
+belong to the closest $100\alpha$% of data points to $x_*$ get weight 0.
+That is, the smaller $\alpha$, the more the LOESS fit is based on local information,
+and the larger $\alpha$, the more it uses global information.
+Next, a weighted polynomial regression model is fitted to the data.
+By default, quadratic regression is used, which means that we 
+we compute the values $\widehat{b}_0, \widehat{b}_1, \widehat{b}_2$
+that minimise the weighted sum of squares
+$$\sum_{i=1}^n w_i(Y_i - (\widehat{b}_0 + \widehat{b}_1X_i + \widehat{b}_2X_i^2))^2.$$
+Finally, we evaluate the smoother at $x_*$ as
+$$\widehat{b}_0 + \widehat{b}_1x_* + \widehat{b}_2x_*^2.$$
+The `loess()` function that `geom_smooth()` draws on implements a few improvements
+on this procedure.
 :::
+
+::: {#exr-age}
+## Age trends
+Still using the data from @Vanhove2014, 
+visualise the relationship between the participants'
+age and their performance on the cognate translation task
+in both modalities. How would you describe the age trends?
+
+Only if you know about regression modelling:
+Would you use simple linear regression to capture these
+age trends? Why or why not?
+:::
+
+::: {#exr-schlechtweg2}
+## Scatterplots for binary data
+Sscatterplots can also be useful
+if you have a binary outcome variable and a continuous predictor.
+To illustrate this, we revisit the data from the study by @Schlechtweg2023, see
+@exr-schlechtweg1.
+
+1. Read in the data.
+2. Retain only the data for Subject 42.
+3. Draw a scatterplot (with a smoother) that shows the `Step` variable along the x-axis and the `SelVowel1` (i.e., whether the sound was identified as /æ/) along the y-axis. Use a tiny amount of vertical jittering (see the section on boxplots) so that we can make out overlapping data points, and use facetting to split up the plot by `Duration`.
+4. Interpret the graph.
+
+In this example, the binary outcome `SelVowel1` was already coded as a numeric variable
+with values 0 and 1.
+If it had been coded as a character variable with values, say, /æ/ and /ɛ/, you would have to
+assign the value of 0 to one level of the variable and 1 to the other one.
+
+5. Now use the data for all participants, but only plot the data for sounds of `middle` duration.
+Use `facet_wrap(vars(Subject))` to split up the plot by subjects. Interpret the graph in terms of the main trend. Are there many subjects that seem to buck the trend?
+
+6. @Schlechtweg2023 also collected data on how strongly their participants distinguish between
+the German sounds /e:/ (_denen_) and /ɛ:/ (_Dänen_). Participants with `GermanPillai` scores near 1 strongly disambiguate between these sounds in their German production; those with `GermanPillai` scores near 0 have merged these sounds in their own German production. Instead of facetting by `Subject`, facet by `reorder(Subject, GermanPillai)`. Then the plots will be arranged from left to right, top to bottom in increasing order of the participants' `GermanPillai` scores. Is there some evidence that the participants' vowel selections in L2 English depend on how strongly they disambiguate between the two German sounds?
+
+7. Using the same lay-out as for the previous plot (i.e., facetting by subject, order by `GermanPillai`), draw plots showing the trendlines per subject for sounds of short, middle, and long duration. Use different colours for the different durations. Don't plot the individual data points, as they would overload the plots. Can you observe any trends? For instance, is one duration typically associated with more /æ/ selections than the others?
+:::
+
+## The Tukey mean--difference plot
+Within-subjects studies are studies in which the participants are tested
+in several (typically all) conditions rather than just one as in the case
+of between-subjects studies.
+Data from within-subjects studies are often difficult to visualise satisfactorily:
+While you could draw boxplots that show the participants' performance in the 
+different conditions, these plots don't show which data points belong to the same
+participants. Yet this information could be crucial: Are the top performers
+in one condition also the top performers the other conditions (suggesting that
+the conditions don't affect relative performance) or are the top performers
+in one condition the bottom performers in the other conditions (suggesting that
+the conditions are differently suited to different profiles)?
+One option is to add lines connecting the data points for each participant,
+but such plots get overloaded pretty quickly.
+
+In the special but common case of a within-subjects design with just two conditions,
+the Tukey mean--difference plot (also known as the Bland--Altman plot in medical circles)
+is a useful alternative. For each participant, we compute the average of their
+two condition scores as well as the difference between these two scores.
+We then draw a scatterplot and put the averages along the x-axis
+and the differences along the y-axis.
+If the scores in one condition are generally better than in the other condition,
+it should either be the case that most scores lie above 0 or that most scores lie beneath 0.
+Further, if there is no noticeable pattern in the scatterplot, this suggests
+that the difference between the condition is pretty consistent across all performance levels.
+If, however, the scatterplot shows, say, a downward trend, this would mean that
+the top performers don't derive the same benefit from the other condition
+as the other participants do.
+
+**EXAMPLE?**
 
 # Scatterplot matrices
 Scatterplot matrices are useful for showing the bivariate relationships
@@ -1402,7 +1947,8 @@ the original value is $2^4 = 16$; if the log-2 transformed value is 6,
 then the original value is $2^6 = 64$. 
 
 An alternative to `scatterplot_matrix()` is the `ggpairs()` function
-from the `GGally` package.
+from the [`GGally` package](https://ggobi.github.io/ggally/reference/ggpairs.html).
+
 
 # Suggested reading
 Kieran Healy's _Data visualization: A practical introduction_ does a stirling
@@ -1411,6 +1957,12 @@ and the `tidyverse`.
 In addition to the material covered in this lecture, Healy covers drawing
 maps and drawing visualisations of statistical models.
 The entire book is freely available from [socviz.co](https://socviz.co/).
+
+As their name suggests, Cleveland dot plots were popularised by
+@Cleveland1993 in his book _Visualizing data_.
+But if you want to learn more about this flexible visualisation tool,
+I suggest you check out the article by @Soenning2016,
+which is geared towards linguists.
 
 # Software versions
 
