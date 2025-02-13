@@ -45,35 +45,8 @@ So work through the code snippets at home, and be patient with yourselves.
 :::
 
 # Preliminaries
-## Required packages
-We'll need the `here` and `tidyverse` packages; install these packages if you
-don't have them already.
+Refer to the section _Working with R and RStudio_ in the datasets primer.
 
-The `here` package makes it easier to read in data and save objects (datasets,
-figures).
-The `tidyverse` suite contains the `ggplot2` package, which we'll use
-extensively here.
-
-### Setting up an R project
-Next, in RStudio, click on `File > New Project... > New Directory`. 
-Navigate to somewhere on your computer where you want to create a new directory
-and give this directory a name (for instance, `DatasetsAndGraphs`). You will use this
-directory to store the data and scripts that you'll need for drawing the graphs
-in as well for saving the graphs themselves to. You don't have to tick the other options.
-
-When you're done, close RStudio. Navigate to the directory you've just created.
-You should find an `.Rproj` file there. Double-click it. If all is well, RStudio
-should fire up.
-
-Create the following subdirectories in the directory you're currently in:
-`data`, `scripts` and `figs`.
-
-On [github.com/janhove/DatasetsAndGraphs](https://github.com/janhove/DatasetsAndGraphs),
-you can find a couple of datasets (under `data`) as well as an R script 
-that defines a new function we'll use (under `functions`). Put the datasets in your
-own `data` directory and the R script in your own `functions` directory.
-
-## Loading the packages
 Load the `here` and `tidyverse` packages.
 
 ```{r}
@@ -371,6 +344,40 @@ Further note that only continuous distributions have probability densities.
 for all real numbers $x$. )
 :::
 
+::: {.callout-caution}
+## The shape of a histogram doesn't depend on _just_ the bin width
+The code belows draws two histograms for the `Englisch` data.
+The difference between them is that, for the first one, the bins used are
+$(0.45, 0.5], (0.5, 0.55], \dots, (0.85, 0.9]$, whereas for the second one,
+they are $(0.475, 0.525], (0.525, 0.575], \dots, (0.875, 0.925]$.
+In both cases, though, the width of the bins is 0.05 points.
+Still, the histograms look somewhat different.
+
+Incidentally, plots drawn using `ggplot()` can be stored as objects (here `h1` and
+`h2`). You can combine these plots into a single figure using the `patchwork` package.
+```{r}
+h1 <- ggplot(data = d_hist,
+                 aes(x = Englisch,
+                     y = after_stat(density))) +
+  geom_histogram(breaks = seq(0.45, 0.9, 0.05),          
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("English vocabulary score") +
+  ylab("density")
+h2 <- ggplot(data = d_hist,
+                 aes(x = Englisch,
+                     y = after_stat(density))) +
+  geom_histogram(breaks = seq(0.45, 0.9, 0.05) + 0.025,          
+                 fill = "lightgrey",
+                 colour = "black") +
+  xlab("English vocabulary score") +
+  ylab("density")
+library(patchwork)
+h1 + h2 # this requires patchwork to work
+```
+
+:::
+
 # Boxplots
 The file `VowelChoices_ij.csv`
 contains a part of the results
@@ -446,7 +453,7 @@ the smallest and the largest such quantile.
 distribution of the values in the data vector $X$ rather than in estimating
 the quantiles of the distribution from which $X$ was sampled.
 For our present purposes, this is more than sufficient.
-But see the explanation `?quantile` for details.)
+But see the explanation at `?quantile` for details.)
 :::
 
 From the boxplot below, we can glean that the IQR is $34 - 31 = 3$.
@@ -838,7 +845,7 @@ between groups, as shown in the previous exercises.
 Furthermore, if the outcome data are fairly coarse, it may be more sensible
 to plot the individual data points and highlight the mean instead of the median.
 
-To illustrate this, we use data from an experiment by @Berthele2012.
+To illustrate this, we use data from an experiment by @Berthele2011b.
 The data are available in the file `berthele2012.csv`.
 Skipping over the details, we'd like to know how the numeric variable `Potenzial`
 varies depending on the values of the categorical variables `CS` and `Name`.
@@ -1285,10 +1292,10 @@ It's also difficult to add additional information to pie charts
 
 2. Readers gauge the numbers (in this case: the proportions)
 that the pie chart represents less accurately than when they're 
-presented in a bar chart or in a dot plot [@Cleveland1984].
+presented in a bar chart or in a Cleveland dot plot [@Cleveland1984].
 
 The graph in the middle is a **bar chart**, the one of the right
-a **dot plot**. Both are better choices than pie charts.
+a (Cleveland) **dot plot**. Both are better choices than pie charts.
 For one things, they're more flexible.
 For instance, you can add the sales from the year before to
 both graphs -- as separate bars or by using different symbols.
@@ -1883,7 +1890,36 @@ If, however, the scatterplot shows, say, a downward trend, this would mean that
 the top performers don't derive the same benefit from the other condition
 as the other participants do.
 
-**EXAMPLE?**
+::: {#exr-vandenbroek1}
+## Drawing a Tukey mean--difference plot
+@VanDenBroek2018 investigated whether repeated exposures to foreign-language
+words enhanced word retention more if these words were embedded in an information-rich
+context that allows the learners to infer the meaning of the words from context
+or if these words were embedded in an information-poor context that forces
+learners to retrieve the meaning of these words from memory.
+We will focus on their Experiment 2, which was a within-subjects experiment, 
+the summary data for which are reported in their Table 2 (p. 565).
+Specifically, we will focus on the Retrieval and Context inference
+conditions (ignoring the Retrieval-plus-context inference condition) and on the productive tests (i.e., translation from the L1 to the L2) at the delayed posttest.
+@VanDenBroek2018 report that, on average, the participants correctly translated 42% of the words
+in the Retrieval condition (with a standard deviation of 21 percentage points)
+and 37% in the Context inference condition (also with a standard deviation of 21 percentage points).
+
+1. Read in the data from `VanDenBroek2018_Exp2.csv`. Retain only those entries for which `RepeatedTest` is `FALSE`. The participant IDs are in the column `PP`; the column `Word` contains the L2 word labels (in Swahili); the column `Translation` their actual L1 translations (in Dutch); `Condition` contains the condition in which the participant learnt the word in question; and the column `Test2Swa2NlLenient` indicates whether the participant was able to correctly translate the word from Dutch into Swahili at the delayed posttest.
+2. Create a new tibble that contains the proportion of correctly translated Dutch words at the delayed posttest per participant and per condition. Do not include the `retrievalc` condition.
+3. Check if the average proportion per condition matches the numbers given in Van den Broek et al.'s Table 2.
+4. Create a tibble that contains, for each participant, the average proportion of correctly translated words over the two conditions as well as the difference between these proportions (i.e., the proportion of correct translations in the `context` condition minus the proportion of correct translations in the `retrievalf` condition).
+5. Draw a scatterplot of the tibble you constructed in the previous step, with the averages along the x-axis and the differences along the y-axis. Add a horizontal line at $y = 0$ to the plot (use `geom_hline(yintercept = 0, linetype = "dashed")`). Also add a scatterplot smoother.
+6. Interpret the plot.
+:::
+
+::: {#exr-vandenbroek2}
+## The same results as a Cleveland dotplot
+Using the same data as in the previous exercise,
+draw a Cleveland dotplot showing the proportion of correctly translated
+words in both conditions for each participant. Which visualisation do you prefer
+for these data?
+:::
 
 # Scatterplot matrices
 Scatterplot matrices are useful for showing the bivariate relationships
@@ -1894,7 +1930,6 @@ file that you've put in the `functions` subdirectory:
 ```{r}
 source(here("functions", "scatterplot_matrix.R"))
 ```
-
 
 Let's look at an example. We read in the lexical metrics data and text ratings
 from the French/German/Portuguese project (see the Datasets primer), compute the average rating per text,

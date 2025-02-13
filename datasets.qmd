@@ -359,21 +359,26 @@ the R commands as well as their output.
 This only works if all the code is syntactically correct and if its proper
 execution does not rely on objects that are not defined in the script.
 Compiling scripts is a great way to verify that your scripts are syntactically
-correct as well as self-contained. Try compiling the templates provided
-to check for yourself.
+correct as well as self-contained. 
+Compile the templates that I provided to check this for yourselves.
+(RStudio may prompt you to install some further packages as you do so.)
 :::
 
 ::: {.callout-important}
 ## Hand in your solutions as scripts
 Adopt one of the templates for your solutions to the exercises.
-Compile the R script as a HTML file.
+Use a logical structure in your scripts (e.g., a new section for each exercise if you're working with
+the `script_with_markdown.R` template).
+Compile the R script as a HTML file. This will only work if your R code is 
+syntactically well-formed and self-contained.
 Check if the HTML file in fact shows the correct results.
 If not, this suggests that the results you'd originally obtained
-depend on some objects that are not defined in the script.
+depend on some objects that are not defined in the script (or that are defined
+differently in the script from how you think they are defined).
 Hand in both the R file as well as the HTML file.
+Please use one script for all the exercises related to the datasets lecture
+and another script for all the exercises related to the data visualisation lecture.
 :::
-
-
 
 ## Loading the packages
 
@@ -399,9 +404,26 @@ instead of just `filter()`.
 
 Incidentally, you don't need to install these packages every time you need them,
 but you do need to load them every time you need them in a new session.
-I recommend including the packages you need at the top of your script.
+I recommend including all of the packages you need in a script at the top
+of your script. Remove any `library()` commands for packages you ended up 
+not using in the script.
 
+::: {.callout-tip}
+## Documenting software versions
+Both R itself as well as R packages evolve. When trying to run old scripts
+using new software versions, you may run into compatibility problems:
+the code may not run or, worse, it will run but produce different results.
+For this reason, it's a good idea to keep track of the versions of R
+and any packages you used. To this end, you can include the command
+`sessionInfo()` at the bottom of your scripts. 
+At the bottom of this page, I've used a different command that serves
+the same purpose but that requires another add-on package to be installed.
 
+If you should ever observe that your code doesn't run as expected,
+you can now check if differences in software versions could be to blame.
+If so, you could try installing the old software versions to so if this solves
+the problem. [[Using different R versions](https://support.posit.co/hc/en-us/articles/200486138-Changing-R-versions-for-the-RStudio-Desktop-IDE); [Installing old package versions](https://support.posit.co/hc/en-us/articles/219949047-Installing-older-versions-of-packages)]
+:::
 
 # Reading in datasets
 
@@ -626,7 +648,7 @@ left
 right
 ```
 
-2. _Without running these commands_, predict what their output would look like:
+2. _Without running these commands_, predict what their output will look like:
 ```{r, eval = FALSE}
 left_join(x = left, y = right)
 right_join(x = left, y = right)
@@ -652,7 +674,7 @@ right
 ```
 
 5. Consult the help page for `left_join` and look up the `na_matches` parameter
-under 'Arguments'. Predict what the output of the following two commands would look like,
+under 'Arguments'. Predict what the output of the following two commands will look like,
 and only then check your answer.
 
 ```{r, eval = FALSE}
@@ -909,12 +931,8 @@ first couple of children were tested in French and Portuguese, not in German.
 We can check this like so:
 ```{r}
 skills_wider_language |> 
+  filter(!is.na(German)) |> 
   slice_sample(n = 10)
-```
-Or, indeed, like so:
-```{r}
-skills_wider_language |> 
-  filter(!is.na(German))
 ```
 
 If we needed to, we could make this dataset wider still:
@@ -1150,19 +1168,18 @@ We had the children in the French/German/Portuguese project write
 short narrative and argumentative texts in each of their languages
 at three points in time. 
 The quality of these texts was scored
-using a grid ([Desgrippes et al. 2017](https://doi.org/10.21832/9781783099054-006)); 
+using a grid [@Lambelet_HELASCOT_writing]; 
 it is these scores that are listed in the `skills` tibble
 we worked with above.
 In addition, 3,060 of these texts were rated for their lexical richness
 by between two and eighteen naïve (i.e., non-instructed) raters each
-using a 1-to-9 scale.
+using a 1-to-9 scale [@Vanhove2019].
 The individual ratings are available in the file `helascot_ratings.csv`.
 Furthermore, we computed a bunch of lexical metrics for each text,
 such as the number of tokens, the mean corpus frequency of the words
 occurring in the text, etc.
 These metrics are available in the file `helascot_metrics.csv`;
-see [Vanhove et al. (2019)](https://doi.org/10.17239/jowr-2019.10.03.04)
-and [Vanhove (2019)](https://osf.io/6bywg) for details.
+see @Vanhove_lexrich_TR for details.
 
 We'll use these datasets to answer three questions:
 
@@ -1263,7 +1280,8 @@ correlations <- metrics_ratings |>
   group_by(Text_Language, Time, Text_Type) |> 
   summarise(
     cor_guiraud = cor(mean_rating, Guiraud),
-    cor_frequency = cor(mean_rating, meanSUBTLEX)
+    cor_frequency = cor(mean_rating, meanSUBTLEX),
+    .groups = "drop"
   )
 correlations
 ```
@@ -1291,7 +1309,9 @@ rating_gridscore |>
   geom_point(shape = 1) +
   facet_grid(rows = vars(Time, Text_Type),
              cols = vars(LanguageTested),
-             scales = "free_y")
+             scales = "free_y") +
+  xlab("average lexical richness rating") +
+  ylab("grid-based text quality rating")
 ```
 
 ```{r}
@@ -1307,7 +1327,7 @@ rating_gridscore |>
 
 # Walkthrough with exercises
 In the previous sections, we started from a pretty clean dataset containing
-the writing data. The goal of this section is to give you some insight
+the writing data. The goal of the present section is to give you some insight
 into how this data set was compiled starting from a more basic representation
 of the underlying data. This section is organised as a series of exercises
 that you should tackle in order. In completing these exercises, you'll convert
@@ -1316,7 +1336,8 @@ per child on a single row) into a dataset that contains a single composite
 score for a single text on each row. This process is considerably more complicated
 than running a couple of `pivot_*()` and `summarise()` commands due to how the
 data were laid out. Some of the instructions in the exercises are intentionally
-not spelt out in great detail.
+not spelt out in great detail: In real life, it's up to you to figure out
+the intermediate steps, too.
 
 ::: {#exr-writing_import}
 ## Reading in the data
@@ -1472,9 +1493,9 @@ extract_info(my_strings, 2)
 ::: {#exr-writing_parsing}
 ## Parsing the column names
 Using the `extract_info()` function just defined,
-add columns called `Language`, `Time`, `TextType` and `Criterion` (large 'c')
+add columns called `Language`, `Time`, `TextType` and `Criterion` (uppercase 'c')
 to the `writing_long` tibble. Evidently, these columns should contain
-the appropriate pieces of information. Then drop the `criterion` (small 'c')
+the appropriate pieces of information. Then drop the `criterion` (lowercase 'c')
 column from the tibble.
 :::
 
@@ -1563,7 +1584,7 @@ x %in% y # which of the values in x occur in y?
 ```
 :::
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
 criteria_arg <- read_xlsx(here("data", "scoring_criteria.xlsx"), sheet = 1)
 argumentative <- argumentative |> 
   inner_join(criteria_arg) |> 
@@ -1588,7 +1609,7 @@ and the ones we used earlier. Let's compare them.
    provided in `helascot_skills.csv` side-by-side.
    Make sure that the resulting tibble contains the scores of all texts,
    even in the case that a score is present for a text in one file but not in the other.
-   (Hint: You can directly use one of the `*_join()` functions. 
+   (Hint: You can't directly use one of the `*_join()` functions. 
    You'll need to do some thinking and some minor data wrangling first.)
 4. Are there any texts for which an `Argumentation` score exists but no `total_score_arg` was computed?
    What is (are) the reason(s) for this (these) discrepancy(ies)?
@@ -1607,7 +1628,7 @@ and the ones we used earlier. Let's compare them.
 :::
 
 # Suggested reading
-The Bible for working with tibbles in R is Wickham et al.'s _R for Data Science_, 
+The Bible for working with tibbles in R is _R for Data Science_ [@Wickham2023], 
 which is freely available from [r4ds.hadley.nz](https://r4ds.hadley.nz/).
 
 # Software versions
