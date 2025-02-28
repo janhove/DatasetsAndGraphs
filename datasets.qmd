@@ -165,7 +165,7 @@ From this, I can deduce that the word was presented to the participant
 but that he or she did not translate the word.
 However, in other situations, it could be the case that some participants were inadvertently 
 never shown a particular word (e.g., due to a programming error)
-or that some of the participants' were irretrievably lost.
+or that some of the participants' answers were irretrievably lost.
 We should enable ourselves to distinguish between these cases, 
 for instance by marking the latter cases using `NA` (_not available_).
 (Alternatively, we could explicitly label cases where the participant did
@@ -185,7 +185,7 @@ out as conspicuous values.
 :::
 
 ## Using several smaller datasets
-The spreadsheet above contain several repeated pieces of information.
+The spreadsheet above contains several repeated pieces of information.
 For instance, for all five translations provided by participant 1034,
 we indicated that they were provided by a woman aged 51.
 We can eliminate this source of redundancy by managing a handful
@@ -1006,7 +1006,23 @@ skills |>
 ```
 
 By setting `.groups = "drop"`, you make sure that the grouping applied to `skills` 
-doesn't apply to the summary tibble any more. (It's not so important.)
+doesn't apply to the summary tibble any more. (It's not so important.) 
+For instance, compare the outcomes of these commands:
+```{r}
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE),
+            .groups = "drop") |> 
+  summarise(median_mean_narr = median(mean_narr))
+
+skills |> 
+  group_by(Time, LanguageTested) |> 
+  summarise(mean_narr = mean(Narration, na.rm = TRUE),
+            mean_arg  = mean(Argumentation, na.rm = TRUE)) |> 
+  summarise(median_mean_narr = median(mean_narr))
+```
+
 
 We can treat these summary tibbles like ordinary tibbles and apply all of the other commands
 to them:
@@ -1104,7 +1120,7 @@ Portuguese background that attended a Portuguese course,
 as well as `PND` and `PNF` for participants in German- and French-speaking
 Switzerland, respectively, with a Portuguese background that did not
 take Portuguese classes.
-* The `1` uniquely identifies this participant within its class.
+* The `1` uniquely identifies this participant within their class.
 
 It could make sense to split up the information contained in this one
 cell into multiple cells. Thankfully, the strings in `Subject` are 
