@@ -1418,10 +1418,6 @@ Importing it into R requires some additional work.
    You'll also observe that the first column wasn't named in the csv file, so R assigned some meaningless name to it.
 :::
 
-```{r, echo = FALSE, message = FALSE}
-writing <- read_csv2(here("data", "writing_data.csv"), 
-                     locale = locale(encoding = "Windows-1252"))
-```
 
 ::: {.callout-tip}
 ## UTF-8 character encoding
@@ -1471,14 +1467,6 @@ by following these steps:
    `VPNID`, `criterion` (containing the former column names) and `score` (containing
    the values in those former columns). (The resulting tibble contains 117,777 columns.)
 :::
-
-```{r, echo = FALSE}
-writing_long <- writing |>
-  select(VPNID, starts_with("Sco"), starts_with("P")) |>
-  select(VPNID, where(is.numeric)) |>
-  pivot_longer(where(is.numeric),
-               names_to = "criterion", values_to = "score")
-```
 
 We continue with the `writing_long` tibble from the previous exercise.
 The `criterion` column contains a subset of the column names that were shown above. 
@@ -1637,18 +1625,6 @@ y %in% x # which of the values in y occur in x?
 x %in% y # which of the values in x occur in y?
 ```
 :::
-
-```{r, echo = FALSE, message = FALSE, warning = FALSE}
-criteria_arg <- read_xlsx(here("data", "scoring_criteria.xlsx"), sheet = 1)
-argumentative <- argumentative |> 
-  inner_join(criteria_arg) |> 
-  select(-MaxScore, -Description) |> 
-  filter(!is.na(score))
-argumentative <- argumentative |> 
-  pivot_wider(names_from = "Criterion",
-              values_from = "score")
-# fix issues with capitalisation, values exceeding maximum possible (clamp)
-```
 
 ::: {#exr-argumentative_compare}
 ## Comparing the calculated scores with the scores used earlier
