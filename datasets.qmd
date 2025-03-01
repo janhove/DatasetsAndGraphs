@@ -748,7 +748,7 @@ all_data |>
 all_data |> 
   filter(!is.na(Übersetzung))
 ```
-We can string together multiple `filter` calls:
+We can string together multiple `filter()` calls:
 
 ```{r}
 # incorrect translations to first word
@@ -806,6 +806,46 @@ d2 <- all_data |>
 the participants did not translate the word as _vorsichtig_.
 :::
 
+**Added 1 March 2025:**
+It is also possible to perform more complex string-based queries.
+For instance, the `stringr` package, which is loaded automatically as part
+of the `tidyverse`, contains the function `str_detect()`. As its name
+suggests, this function can be used to detect if a string contains a 
+particular combination of symbols:
+
+```{r}
+# all rows with an Übersetzung containing "ch"
+all_data |> 
+  filter(str_detect(Übersetzung, "ch"))
+```
+
+Related functions are `str_starts()` and `str_ends()`
+for checking if a string starts or ends with a particular combination of
+symbols, as well as `str_sub()` for extracting substrings based on their position
+in the string. As the examples below illustrate, these queries are case-sensitive:
+
+```{r}
+# Übersetzung starts with an "s" (lowercase!)
+all_data |> 
+  filter(str_starts(Übersetzung, "s"))
+# Übersetzung starts with an "S" (uppercase!)
+all_data |> 
+  filter(str_starts(Übersetzung, "S"))
+# Übersetzung starts with an "s" or an "S"
+all_data |> 
+  filter(str_starts(Übersetzung, "[sS]"))
+# Übersetzung ends with "en"
+all_data |> 
+  filter(str_ends(Übersetzung, "en"))
+# The third symbol in Übersetzung is "c"
+all_data |> 
+  filter(str_sub(Übersetzung, start = 3, end = 3) == "c")
+```
+
+More complicated queries are possible through the use of so-called
+regular expressions, which we'll touch on later. For more information
+about the `str_*()` functions, see the [stringr documentation](https://stringr.tidyverse.org/).
+
 ## Selecting columns
 Sometimes, a dataset is too cumbersome to handle because it contains a lot
 of irrelevant columns. Using `select`, we can select those columns that are of interest.
@@ -850,8 +890,6 @@ Without the pipe (`|>`), these commands become difficult to read:
 ```{r}
 distinct(select(filter(all_data, Wort == "behärska"), Übersetzung))
 ```
-
-
 
 # Pivoting
 In the course of an analysis, it is often necessary to convert a
@@ -1076,7 +1114,7 @@ Let $X = (X_1, \dots, X_n)$ be a data vector. To compute the Hodges--Lehmann est
 of $X$'s central tendency, proceed as follows:
 
 1. Compute the pairwise averages ('Walsh averages') of the $X$ values, that is, compute $\frac{X_i + X_j}{2}$
-   for each $i = 1, \dots, n-1$ and $j = i + 1, \dots, n$.
+   for each $i = 1, \dots, n$ and $j = i, \dots, n$.
 
 2. Compute the median of these Walsh averages.
 
@@ -1087,7 +1125,7 @@ hodges_lehmann <- function(x, na.rm = FALSE) {
     x <- x[!is.na(x)]
   }
   pairwise_means <- outer(x, x, FUN = "+") / 2 # computes *all* means of two observations
-  median(pairwise_means[upper.tri(pairwise_means, diag = TRUE)]) # median of means of x_i, x_j with i < j
+  median(pairwise_means[upper.tri(pairwise_means, diag = FALSE)]) # median of means of x_i, x_j with i < j
 }
 ```
 
