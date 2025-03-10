@@ -34,7 +34,7 @@ such as kernel density estimates and quantile--quantile plots.
 You're going to take away much more from this primer
 if you copy the code snippets by _typing_ them rather
 than by copy-pasting them.
-That said, I strongly advise you to do so in your own
+I strongly advise you to do so in your own
 time and not as you're attending the lecture:
 Some things are bound to go wrong (perhaps a comma
 in the wrong spot, a missing bracket or an upper-case
@@ -70,7 +70,7 @@ Now read in the data as explained in the primer on working with datasets.
 d_hist <- read_csv(here("data", "Vanhove2015_Vpn.csv"))
 ```
 
-A histogram shows how a single numeric variable is distributed ('univariate distribution').
+A histogram shows how the observations from a single numeric variable are distributed ('univariate distribution').
 The range of the observed values of this variable is split up in a number
 of intervals, typically all of equal width. 
 Over each interval, a bar is drawn whose height reflects how often the 
@@ -84,7 +84,11 @@ there are any 'univariate' outliers (i.e., values that lie far from the bulk of 
 
 Since you've already loaded the `tidyverse` and since you've already read in the data, we can start to draw some histograms.
 To this end, we need to define the object and the variables we want to plot (lines 1--2). 
-If we only executed the first two lines of the code below, all we'd see is a blank canvas.
+We use `aes()` command (short for _aesthetics_) on the second line to specify which
+aspect of the data should be mapped onto which aspect of the plot.
+For a bare-bones histogram, we only need to specify that we want to plot the values of the variable
+of our choice along the x-axis.
+If we only executed the first two lines of the code below, all we'd see is a blank canvas, though.
 To draw the histogram itself, we need to add a **layer** to this blank canvas that
 contains a histogram based on these pieces of information.
 
@@ -355,7 +359,7 @@ Still, the histograms look somewhat different.
 
 Incidentally, plots drawn using `ggplot()` can be stored as objects (here `h1` and
 `h2`). You can combine these plots into a single figure using the `patchwork` package.
-```{r}
+```{r, fig.width = 8, fig.height = 3.5}
 h1 <- ggplot(data = d_hist,
                  aes(x = Englisch,
                      y = after_stat(density))) +
@@ -515,10 +519,14 @@ Are there any pecularities of the data distributions that are visible in the
 histogram but not in the boxplot?
 ```{r, echo = FALSE, fig.width = 6, fig.height = 12}
 set.seed(2025-10-02)
+squeeze <- function(x) {
+  x <- x - median(x) + 0.5
+  (x - min(x)) / (max(x) - min(x))
+}
 d1 <- c(rbeta(40, 20, 1), rbeta(40, 1, 20))
 d2 <- rbeta(80, 3, 3)
 d3 <- c(rbeta(40, 15, 40), rbeta(40, 40, 15))
-d4 <- round(rbeta(80, 3, 3) * 7) / 7
+d4 <- (round(rbeta(80, 3, 3) * 7) / 7)
 d5 <- rbeta(80, 3, 1)
 df <- data.frame(d1, d2, d3, d4, d5)
 
@@ -624,7 +632,7 @@ ggplot(data = d_box,
 
 If you count the number of points in the graph above, 
 you'll notice that there are much fewer points (28) than there were participants (80). 
-The reason is that several participants obtained the same result, 
+The reason is that several participants in the same condition obtained the same result, 
 and their data are plotted on top of each other. 
 For this reason, it makes sense to move the plotted points a bit apart (_jittering_). 
 Here we can move the points apart horizontally. 
@@ -777,12 +785,8 @@ df <- data.frame(
   d4 = c(rchisq(n, 3), rpois(n, 3)),
   d5 = c(rep(0, 15), rchisq(25, 2), rf(n, 1, 6))
 )
-normalise <- function(x) {
-  x <- x - min(x)
-  x / max(x)
-}
 df <- df |> 
-  mutate_if(is.numeric, normalise)
+  mutate_if(is.numeric, squeeze)
 
 b1 <- ggplot(df, aes(x = Group, y = d1)) +
   geom_boxplot() +
@@ -849,7 +853,7 @@ To illustrate this, we use data from an experiment by @Berthele2011b.
 The data are available in the file `berthele2012.csv`.
 Skipping over the details, we'd like to know how the numeric variable `Potenzial`
 varies depending on the values of the categorical variables `CS` and `Name`.
-In the plot below, we use a technique called facetting to split up
+In the plot below, we use a technique called **facetting** to split up
 the graph into two subgraphs. The boxplots don't seem to be too informative
 as they are degenerate: The medians coincide with either the 1st or 3rd quartile
 due to the coarseness of the data.
@@ -868,7 +872,8 @@ for the `Potenzial` scores in each cell and add these to the data plot.
 Note that we can pass new `data` arguments to geom-layers (here: `geom_pointrange()`)
 in order to visualise data from different sources.
 I also jittered the data points vertically ever so slightly in order to be able
-to make out the overlapping data points better.
+to make out the overlapping data points better and changed the German axis
+names and labels to English ones.
 ```{r}
 potenzial_summary <- berthele |> 
   group_by(CS, Name) |> 
@@ -880,10 +885,15 @@ ggplot(berthele,
        aes(x = CS, y = Potenzial)) +
   geom_point(shape = 1, position = position_jitter(height = 0.05, width = 0.2)) +
   geom_pointrange(data = potenzial_summary,
-             aes(y = mean_Potenzial, ymin = mean_Potenzial - sd_Potenzial,
-                     ymax = mean_Potenzial + sd_Potenzial),
-             size = 1, colour = "blue", shape = 8) +
-  facet_grid(cols = vars(Name))
+                  aes(y = mean_Potenzial, 
+                      ymin = mean_Potenzial - sd_Potenzial,
+                      ymax = mean_Potenzial + sd_Potenzial),
+                  size = 1, colour = "blue", shape = 8) +
+  facet_grid(cols = vars(Name)) +
+  scale_x_discrete(name = "Code-switching condition",
+                   limits = c("ohne", "mit"),         # specifies in what order the x-values should appear, referencing their actual names
+                   labels = c("without", "with")) +   # specifies how these x-values should be *called*
+  ylab("Academic potential rating")
 ```
 
 :::
@@ -935,6 +945,71 @@ line type. The colours and line types used here are ggplot's
 default choices; we could override those, see
 `?scale_colour_manual` and `?scale_linetype_manual`.
 The same goes for the appearance of the legends.
+
+::: {.callout-caution}
+## Plot parameters inside and outside of `aes()`
+In the plot above, we put the `colour` and `linetype` parameter
+inside the `aes()` call. As a result, different colours are used
+for different values of `Language` and different linetypes are used
+for different values of `CourseType`. It is also possible to set
+such parameters outside of the `aes()` call if you want to specify 
+fixed colours, linetypes or what-have-you. For instance,
+the following plot uses different `shape`s and `linetype`s to
+distinguish between languages and course types (admittedly the
+shapes are difficult to differentiate), whereas
+the `colour` of the lines and of the points are set to 
+`darkgreen` and `darkorange`, respectively:
+
+```{r}
+ggplot(data = slavin,
+       aes(x = Grade, 
+           y = Mean,
+           shape = Language, 
+           linetype = CourseType)) +
+  geom_line(colour = "darkgreen") +
+  geom_point(colour = "darkorange")
+```
+
+Notice what happens when we 'set' the `colour` parameter to `"darkgreen"`
+in the `aes()` call instead:
+
+```{r}
+ggplot(data = slavin,
+       aes(x = Grade, 
+           y = Mean,
+           shape = Language, 
+           linetype = CourseType,
+           colour = "darkgreen")) +
+  geom_line() +
+  geom_point()
+```
+Effectively, we've asked `ggplot2` to vary the colour of the lines
+and points _depending on_ the value `"darkgreen"` -- which is a constant.
+We did _not_ set the colour _to_ `"darkgreen"`.
+:::
+
+::: {.callout-tip}
+## Overriding default aesthetic mappings
+To override the default colour, linetype, shape etc. mappings,
+you can use additional layers such as `scale_colour_manual()`,
+`scale_shape_manual()` etc. The example below illustrates the principle;
+refer to the [documentation](https://ggplot2-book.org/scales-other) for more details.
+```{r}
+ggplot(data = slavin,
+       aes(x = Grade, 
+           y = Mean,
+           colour = Language,
+           linetype = CourseType)) +
+  geom_line() +
+  geom_point() +
+  scale_linetype_manual(values = c("solid", "dotdash")) +
+  scale_colour_manual(values = c("darkorange", "darkblue"))
+```
+Colours can also be specified using hexadecimal (HEX) RGB notation.
+On the [ColorBrewer 2.0 website](https://colorbrewer2.org/),
+you can preview colour combination that work well together
+and obtain their HEX codes.
+:::
 
 Using different colours and line types is all good and well
 if you have a limited number of variables and a small number
@@ -1149,6 +1224,33 @@ The upshot is this:
 If at all possible, **don't just show averages** but try to give your readers
 -- and yourselves --
 a sense of how the actual data are distributed.
+:::
+
+::: {.callout-tip}
+## Primary vs secondary comparisons
+When facetting along multiple dimensions,
+we're faced with the decision as to which variable we should facet by 
+horizontally and which variable we should facet by vertically.
+A useful guiding principle is that comparing values plotted on a shared
+axis is easier than comparing values plotted on two different axes.
+For instance, in the plot where we split up the line chart vertically by programme (`TBE` vs. `EI`)
+and horizontally by language (`English`, `Spanish`),
+it is very easy to compare the English and Spanish values
+for the EI programme with each other as well as to compare
+the English and Spanish values for the TBE programme with
+each other: Within each programme, the values are plotted
+along a common y-axis. 
+However, comparing, say, the English values in the EI programme to 
+those in the TBE programme requires more effort, as these values are plotted along different y-axes.
+So, in this particular case, if you need to facet both vertically and horizontally,
+you'd facet horizontally by the variable related to the most important comparisons
+and vertically by the variable related to any further comparisons.
+That said, in this example, we can easily present the data clearly without facetting
+or using just horizontal facetting.
+
+In the first chapter of his freely available book,
+@Healy2019 discusses how the lay-out of a graph affects the ease with which such visual decoding
+tasks can be completed.
 :::
 
 ::: {#exr-morphologicalcues}
@@ -1549,7 +1651,7 @@ Bonus: Aggregate the data in a different way, namely by computing the
 proportion of correct vowel uses per participant per item category.
 (You should again ignore the categories `other cognate` and `non-cognate`
 as well as the `Training` `Block`.)
-Visualise these aggregated data, for stance using boxplots. 
+Visualise these aggregated data, for instance using boxplots. 
 Do you see any advantages and disadvantages of this visualisation compared to the dotchart?
 Would it be useful to include both kinds of visualisation when presenting
 the study's results at a conference or in a research paper?
@@ -1732,7 +1834,7 @@ This is the case even when the relationship itself is as good as linear.
 To elaborate on the second point, consider the graph below, which shows 
 a scatterplot of simulated data with two scatterplot smoothers.
 The red line was drawn with the default settings. This line doesn't capture an important feature of the relationship (the data points go up and down). 
-The blue line captures this trend much better. It was drawn using the command `geom_smooth(span = 0.1)`. The `span` parameter determines how wiggly the curve may be (the smaller `span`, the wigglier the curve). By default, span is set to 0.75. Finding a decent span value is matter of trial and error.
+The blue line captures this trend much better. It was drawn using the command `geom_smooth(span = 0.1)`. The `span` parameter determines how wiggly the curve may be (the smaller `span`, the wigglier the curve). By default, `span` is set to 0.75. Finding a decent span value is matter of trial and error.
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 df <- data.frame(x = runif(100, -4*pi, 4*pi))
@@ -1809,18 +1911,34 @@ for $i = 1, \dots, n$.
 This weighting scheme assigns large weights to data points with predictor values
 close to $x_*$ and smaller ones with predictor values farther away from $x_*$.
 Data points with predictor values larger than $M$, i.e., data points that do not
-belong to the closest $100\alpha$% of data points to $x_*$ get weight 0.
+belong to the closest $100\alpha$% of data points to $x_*$ get weight 0:
+
+```{r, echo = FALSE}
+x_vals <- seq(0, 1.3, length.out = 1000)
+y_vals <- pmax((1 - (x_vals/1)^3)^3, 0)
+df <- data.frame(x = x_vals, y = y_vals)
+ggplot(df, aes(x, y)) +
+  geom_line(color = "black", linewidth = 1) +
+  xlab(expression(paste("distance of ", x[i], " from x*"))) +
+  scale_x_continuous(breaks = c(0, 0.5, 1),
+                     labels = c("0", "M/2", "M")) +
+  ylab(expression(w[i])) +
+  labs(title = "Weighting function used in LOESS") +
+  theme_minimal()
+```
+
+
 That is, the smaller $\alpha$, the more the LOESS fit is based on local information,
 and the larger $\alpha$, the more it uses global information.
 Next, a weighted polynomial regression model is fitted to the data.
-By default, quadratic regression is used, which means that we 
+By default, quadratic regression is used, which means that 
 we compute the values $\widehat{b}_0, \widehat{b}_1, \widehat{b}_2$
 that minimise the weighted sum of squares
 $$\sum_{i=1}^n w_i(Y_i - (\widehat{b}_0 + \widehat{b}_1X_i + \widehat{b}_2X_i^2))^2.$$
 Finally, we evaluate the smoother at $x_*$ as
 $$\widehat{b}_0 + \widehat{b}_1x_* + \widehat{b}_2x_*^2.$$
-The `loess()` function that `geom_smooth()` draws on implements a few improvements
-on this procedure.
+The `loess()` function, which `geom_smooth()` draws on, 
+implements a few improvements on this procedure.
 :::
 
 ::: {#exr-age}
@@ -1976,17 +2094,37 @@ For instance, the number -0.15 is the correlation between the mean ratings and t
 type/token ratios, whereas 0.70 is the correlation between the mean ratings and the number
 of tokens (log-2 transformed).
 
-Incidentally, I transformed the number of tokens because this variable
+Incidentally, I **transformed** the number of tokens because this variable
 was pretty right-skewed. If the log-2 transformed value is 4, then 
 the original value is $2^4 = 16$; if the log-2 transformed value is 6,
 then the original value is $2^6 = 64$. 
+You can only log-transform a variable if all its values are strictly positive.
+Sometimes, when zeroes occur, the square-root transformation is useful (i.e.,
+replace the values with their square roots).
+Other transformations exist (Google _Box-Cox transformation_ and _Yeo-Johnson transformation_)
+but come at the price of reduced interpretability.
+A special use-case that may be of interest to language researchers concerns
+the treatment of corpus frequencies; see @Brysbaert2013b for guidance.
 
 An alternative to `scatterplot_matrix()` is the `ggpairs()` function
 from the [`GGally` package](https://ggobi.github.io/ggally/reference/ggpairs.html).
 
+::: {#exr-logarithms}
+## Logarithms
+Draw the scatterplot matrix again,
+but this time, use base 10 when log-transforming
+the number of tokens. (Use `log10()`. If
+the log-10-transformed value of $x$ is $y$,
+then $10^y = x$.) What changes and what stays the same?
+Draw the scatterplot once more,
+using the natural logarithm for the log-transformation.
+(Use `log()`. The natural logarithm is the logarithm
+that uses Euler's number $e = 2.71828\dots$ as its base.)
+What changes and what stays the same?
+:::
 
 # Suggested reading
-Kieran Healy's _Data visualization: A practical introduction_ does a stirling
+Kieran Healy's _Data visualization: A practical introduction_ [@Healy2019] does a stirling
 job at explaining the _why_ and the _how_ of drawing graphs using `R` 
 and the `tidyverse`.
 In addition to the material covered in this lecture, Healy covers drawing
@@ -1998,6 +2136,10 @@ As their name suggests, Cleveland dot plots were popularised by
 But if you want to learn more about this flexible visualisation tool,
 I suggest you check out the article by @Soenning2016,
 which is geared towards linguists.
+
+The graphs we've covered are static.
+For interactive graphs, check out [`ggplotly()`](https://plotly.com/ggplot2/)
+and [`shiny`](https://shiny.posit.co/).
 
 # Software versions
 
