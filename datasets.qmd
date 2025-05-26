@@ -1125,7 +1125,7 @@ hodges_lehmann <- function(x, na.rm = FALSE) {
     x <- x[!is.na(x)]
   }
   pairwise_means <- outer(x, x, FUN = "+") / 2 # computes *all* means of two observations
-  median(pairwise_means[upper.tri(pairwise_means, diag = FALSE)]) # median of means of x_i, x_j with i < j
+  median(pairwise_means[upper.tri(pairwise_means, diag = TRUE)]) # median of means of x_i, x_j with i <= j
 }
 ```
 
@@ -1418,6 +1418,12 @@ Importing it into R requires some additional work.
    You'll also observe that the first column wasn't named in the csv file, so R assigned some meaningless name to it.
 :::
 
+```{r, echo = FALSE}
+# SPOILERS!
+writing <- read_csv2(here("data", "writing_data.csv"), locale = locale(encoding = "Windows-1252"))
+```
+
+
 
 ::: {.callout-tip}
 ## UTF-8 character encoding
@@ -1467,6 +1473,14 @@ by following these steps:
    `VPNID`, `criterion` (containing the former column names) and `score` (containing
    the values in those former columns). (The resulting tibble contains 117,777 columns.)
 :::
+
+```{r, echo = FALSE}
+# SPOILERS
+writing_long <- writing |> 
+  select(VPNID, starts_with("Sco") & where(is.numeric), starts_with("P") & where(is.numeric)) |> 
+  pivot_longer(-VPNID, names_to = "criterion", values_to = "score")
+```
+
 
 We continue with the `writing_long` tibble from the previous exercise.
 The `criterion` column contains a subset of the column names that were shown above. 
