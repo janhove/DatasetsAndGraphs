@@ -1309,29 +1309,43 @@ expectations are borne out.
 :::
 
 # Putting it all together: Portuguese reading and writing skills
-
-I'll walk you through this example in the lecture.
-The data stem from @Lambelet_HELASCOT_writing and @Pestana_HELASCOT_reading.
+The data for this walkthrough stem from @Lambelet_HELASCOT_writing 
+and @Pestana_HELASCOT_reading.
+We want to visualise the results on the Portuguese reading and writing (both argumentative and narrative) tasks
+between three groups: Portuguese children in Portugal, children with a Portuguese background
+in French-speaking Switzerland, and children with a Portuguese background in German-speaking Switzerland.
+Ideally, we should also be able to make out trends across the three times of data collection.
 
 ::: {.callout-important}
 ## Drawing decent graphs can take time
 Don't get disheartened by the lengthy code snippets below.
 They are not the result of one energetic burst of coding.
 As I'll try to demonstrate in the lecture, I started with a
-fairly basic graph, found some problem with it, tried to fix it,
-and so on. The end result is a plot with 27 boxplots that
-hopefully enables readers to compare the three language groups
+fairly basic graph, found some problem with it, tried to fix it, and so on. 
+The end result is a plot with 27 boxplots 
+that hopefully enables readers to compare the three language groups
 in terms of their test scores, to gauge the progress that each
 language group makes from T1 to T3, and that also gives readers
 a sense of the variation that exists within each group.
 :::
 
+Read in the data and
+convert them to a longer format (with the three skills underneath rather than beside each other).
+Then only retain the data for Portuguese tests, and get rid of the `NA` scores.
 ```{r}
 skills <- read_csv(here("data", "helascot_skills.csv"))
 skills_longer_portuguese <- skills |> 
-  pivot_longer(Reading:Narration,
-               values_to = "score",
-               names_to = "skill") |> 
+  pivot_longer(Reading:Narration, values_to = "score", names_to = "skill") |> 
+  filter(LanguageTested == "Portuguese") |> 
+  filter(!is.na(score))
+```
+Inspect the structure of the data by typing its name at the prompt. (Not shown here.)
+
+We'll need to extract some information from the `Subject` strings.
+(See the section on **String manipulation** in the datasets tutorial.)
+
+```{r}
+skills_longer_portuguese <- skills_longer_portuguese |> 
   mutate(
     class = str_split_i(Subject, "_", 1),
     group = str_split_i(Subject, "_", 2)
@@ -1343,28 +1357,129 @@ skills_longer_portuguese <- skills |>
     group %in% c("PLF", "PNF") ~ "French-Portuguese",
     group %in% c("PLD", "PND") ~ "German-Portuguese",
     .default =  "other"
-  )) |> 
-  filter(LanguageTested == "Portuguese")
+  ))
 ```
 
+Our default for plotting more or less fine-grained data is the boxplot.
+We'll plot different boxplots per `language_group`.
+We can use facetting to draw separate smaller plots for different times and different tasks.
 ```{r}
-ggplot(skills_longer_portuguese |> 
-         filter(!is.na(score)),
-       aes(x = language_group,
-           y = score)) +
+ggplot(skills_longer_portuguese,
+       aes(x = language_group, y = score)) +
+  geom_boxplot() +
+  facet_grid(cols = vars(Time), rows = vars(skill))
+```
+
+This graph has a few problems. The most pressing two are that 
+the group labels are illegible and that the scores on the different tasks
+are plotted on the same scale. The latter results in very compressed boxplots
+for the reading data and can be fixed by specifying that that the y-axis should be scaled freely:
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(x = language_group, y = score)) +
+  geom_boxplot() +
+  facet_grid(cols = vars(Time), rows = vars(skill),
+             scales = "free_y")
+```
+
+To fix the first problem, there are a few options.
+We could shorten the labels to, say, `FR-PT`, `GE-PT` and `mono PT` or so.
+We could also write the labels vertically or diagonally rather than horizontally.
+My preferred solution, though, is to _flip the axes_ and draw the boxplots themselves
+horizontally rather than vertically. Like so:
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(y = language_group, x = score)) +
+  geom_boxplot() +
+  facet_grid(cols = vars(Time), rows = vars(skill),
+             scales = "free_x")
+```
+
+Note that the trick with `scales = free_x` doesn't quite work here since there
+are scores for all three tasks in each column.
+We can sidestep this problem by changing the way the graph is facetted:
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(y = language_group, x = score)) +
+  geom_boxplot() +
+  facet_grid(rows = vars(Time), cols = vars(skill),
+             scales = "free_x")
+```
+This isn't bad. But we can add some more structure to this graph.
+Specifically, it was expected that French-Portuguese children would do better
+on some of the Portuguese tasks than German-Portuguese children due to the
+linguistic proximity.
+We can override the order in which the groups are plotted using `scale_y_discrete()`.
+While we're at it, let's suppress the axis name for the y axis, too.
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(y = language_group, x = score)) +
+  geom_boxplot() +
+  scale_y_discrete(limits = c("German-Portuguese", "French-Portuguese", "Portuguese control"),
+                   name = element_blank()) +
+  xlab("Test score") +
+  facet_grid(rows = vars(Time), cols = vars(skill),
+             scales = "free_x")
+```
+
+To give readers a better sense of the distributions underlying these boxplots,
+let's add the individual data points to this plot.
+Don't forget to set `outlier.shape = NA` in the `geom_boxplot()` call.
+Play with the `height` parameter to find one you find suitable.
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(y = language_group, x = score)) +
   geom_boxplot(outlier.shape = NA) +
-  geom_point(position = position_jitter(width = 0.2, height = 0),
-             shape = 1,
-             alpha = 1/5) +
-  scale_x_discrete(limits = c("German-Portuguese", "French-Portuguese", "Portuguese control")) + 
-  coord_flip() +
-  facet_grid(rows = vars(Time),
-             cols = vars(skill),
+  geom_point(position = position_jitter(width = 0, height = 0.1), shape = 1) +
+  scale_y_discrete(limits = c("German-Portuguese", "French-Portuguese", "Portuguese control"),
+                   name = element_blank()) +
+  xlab("Test score") +
+  facet_grid(rows = vars(Time), cols = vars(skill),
+             scales = "free_x")
+```
+
+Hm, that looks a bit ugly - the circles are a bit _too_ present.
+We can increase their transparency, though.
+And finally, let's override the default grey plotting theme.
+
+```{r}
+ggplot(skills_longer_portuguese,
+       aes(y = language_group, x = score)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(position = position_jitter(width = 0, height = 0.1), shape = 1, alpha = 1/4) +
+  scale_y_discrete(limits = c("German-Portuguese", "French-Portuguese", "Portuguese control"),
+                   name = element_blank()) +
+  xlab("Test score") +
+  facet_grid(rows = vars(Time), cols = vars(skill),
              scales = "free_x") +
-  xlab(element_blank()) +
-  ylab("Test score") +
   theme_bw()
 ```
+
+Better!
+
+Having drawn a graph, it's a good idea to reflect on what comparisons
+can easily be made based on this graph and which ones are difficult to make.
+You want to ensure that the comparisons relevant for the primary research questions
+are easy to make.
+The plot above makes it very easy to compare the scores on a particular
+task between the different groups, as these can be read off a shared
+axis (the x-axis) (comparison within a given panel).
+It's also pretty easy to see that, for a given group and a given task,
+the scores at the second time are higher than those at the first time,
+and those at the third time are typically higher than those at the second time
+(comparison across panels in the same column).
+If the temporal component is more important to you than the group comparison proper,
+use `language_group` as a facetting variable and `Time` as the `y` variable.
+This way, you ensure that the answer to the primary research question can be gleaned
+easily from the graph.
+
+What's difficult to do is to compare the scores between different columns -- 
+but it wouldn't make much sense to do so as these scores represents different variables!
 
 # Cleveland dot plots
 
@@ -1955,7 +2070,7 @@ age trends? Why or why not?
 
 ::: {#exr-schlechtweg2}
 ## Scatterplots for binary data
-Sscatterplots can also be useful
+Scatterplots can also be useful
 if you have a binary outcome variable and a continuous predictor.
 To illustrate this, we revisit the data from the study by @Schlechtweg2023, see
 @exr-schlechtweg1.
@@ -2122,6 +2237,11 @@ using the natural logarithm for the log-transformation.
 that uses Euler's number $e = 2.71828\dots$ as its base.)
 What changes and what stays the same?
 :::
+
+**Update (2025/05/26):** Part of what changes is the shape of the histograms.
+The shape of the underlying distribution, up to scaling, doesn't change, though.
+The shape of the histogram changes because, by default, the boundaries
+of the histogram bins are set to 'pretty' values (see `?pretty`).
 
 # Suggested reading
 Kieran Healy's _Data visualization: A practical introduction_ [@Healy2019] does a stirling
